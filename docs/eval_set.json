@@ -1,0 +1,27 @@
+{
+  "description": "20 条独立评测集：人工标注期望结果，用于计算分类/紧急度/意图/字段提取准确率。数据为模拟业务消息，标注由项目组完成（模拟口径）。",
+  "version": "1.0",
+  "created_at": "2026-08-29",
+  "cases": [
+    {"id": 1, "text": "帮我查下提单号MAEU123456789的船期，什么时候开船？", "expected": {"category": "运输", "urgency": "中", "bill_no": "MAEU123456789", "container_no": null, "pol": null, "pod": null, "intent": "查询"}},
+    {"id": 2, "text": "帮我查下TCLU1234567为什么还在收滞箱费？柜子上周就还场了。", "expected": {"category": "账单", "urgency": "低", "bill_no": null, "container_no": "TCLU1234567", "pol": null, "pod": null, "intent": "查询"}},
+    {"id": 3, "text": "我们的货在海关被查验扣货了，提单号HLCU987654321，说是品名不符，怎么办？", "expected": {"category": "关务", "urgency": "高", "bill_no": "HLCU987654321", "container_no": null, "pol": null, "pod": null, "intent": "查询"}},
+    {"id": 4, "text": "下周三有一批货要进仓，大概40个托盘，帮忙预约入库时间。", "expected": {"category": "仓储", "urgency": "低", "bill_no": null, "container_no": null, "pol": null, "pod": null, "intent": "预约"}},
+    {"id": 5, "text": "这个月的账单THC费好像多收了，之前报价USD210，账单上收了USD335，请核实并退款。", "expected": {"category": "账单", "urgency": "低", "bill_no": null, "container_no": null, "pol": null, "pod": null, "intent": "查询"}},
+    {"id": 6, "text": "客户投诉货物破损，要求索赔，提单号COSU555123456，请尽快处理。", "expected": {"category": "运输", "urgency": "高", "bill_no": "COSU555123456", "container_no": null, "pol": null, "pod": null, "intent": "投诉"}},
+    {"id": 7, "text": "从上海到鹿特丹的门到门运价多少？20GP和40HQ分别报一下。", "expected": {"category": "运输", "urgency": "低", "bill_no": null, "container_no": null, "pol": "上海", "pod": "鹿特丹", "intent": "查询"}},
+    {"id": 8, "text": "税单什么时候能出来？这票货上周就清关放行了。", "expected": {"category": "关务", "urgency": "中", "bill_no": null, "container_no": null, "pol": null, "pod": null, "intent": "查询"}},
+    {"id": 9, "text": "仓库的货待拣货三天了一直没动，能不能今天出库？", "expected": {"category": "仓储", "urgency": "低", "bill_no": null, "container_no": null, "pol": null, "pod": null, "intent": "查询"}},
+    {"id": 10, "text": "需要改单：提单号MSCU333987654，把收货人名称更正一下，费用我们承担。", "expected": {"category": "运输", "urgency": "低", "bill_no": "MSCU333987654", "container_no": null, "pol": null, "pod": null, "intent": "改单"}},
+    {"id": 11, "text": "第一次走深圳口岸出口，报关需要准备哪些资料？", "expected": {"category": "关务", "urgency": "低", "bill_no": null, "container_no": null, "pol": null, "pod": null, "intent": "查询"}},
+    {"id": 12, "text": "提单号MSCU222345678的货说好周五到港，现在还没到，客户催得紧，帮忙催下船公司。", "expected": {"category": "运输", "urgency": "中", "bill_no": "MSCU222345678", "container_no": null, "pol": null, "pod": null, "intent": "催件"}},
+    {"id": 13, "text": "免堆期是几天？过了免堆期仓储费怎么算？", "expected": {"category": "仓储", "urgency": "低", "bill_no": null, "container_no": null, "pol": null, "pod": null, "intent": "查询"}},
+    {"id": 14, "text": "你们上个月开的发票税号错了，需要重开一份。", "expected": {"category": "账单", "urgency": "低", "bill_no": null, "container_no": null, "pol": null, "pod": null, "intent": "其他"}},
+    {"id": 15, "text": "场站说这票货有海关扣货通知，提单号EMCS444123456，请帮忙查是谁扣的、怎么放行。", "expected": {"category": "关务", "urgency": "高", "bill_no": "EMCS444123456", "container_no": null, "pol": null, "pod": null, "intent": "查询"}},
+    {"id": 16, "text": "海运费能不能月结？我们每月大概60票货，想谈个账期。", "expected": {"category": "账单", "urgency": "低", "bill_no": null, "container_no": null, "pol": null, "pod": null, "intent": "查询"}},
+    {"id": 17, "text": "木托盘没做熏蒸会不会在口岸被查？柜子还没进港，来得及处理吗？", "expected": {"category": "关务", "urgency": "低", "bill_no": null, "container_no": null, "pol": null, "pod": null, "intent": "查询"}},
+    {"id": 18, "text": "查询下这票货的清关进度，放行了吗？提单号OOLU222345678。", "expected": {"category": "关务", "urgency": "低", "bill_no": "OOLU222345678", "container_no": null, "pol": null, "pod": null, "intent": "查询"}},
+    {"id": 19, "text": "需要预约下周四送货进仓的时间，仓库那边几点收货？", "expected": {"category": "仓储", "urgency": "低", "bill_no": null, "container_no": null, "pol": null, "pod": null, "intent": "预约"}},
+    {"id": 20, "text": "你们公司能做2类危险品的海运订舱吗？需要提前几天订？", "expected": {"category": "运输", "urgency": "低", "bill_no": null, "container_no": null, "pol": null, "pod": null, "intent": "查询"}}
+  ]
+}

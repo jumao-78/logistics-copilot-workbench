@@ -1,0 +1,18 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# 数据与本地环境（数据库文件不进版本库，可由脚本重建）
+data/*.db
+data/*.db-journal
+.env
+
+# IDE / 系统
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+demo.mp4
+.rivet/

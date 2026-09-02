@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Logistics Copilot · 跨境物流智能客服工作台</title>
+<link rel="stylesheet" href="/web/vendor/bootstrap.min.css">
+<style>
+  :root {
+    --primary: #1d4ed8;
+    --primary-soft: #e8effd;
+    --bg: #f4f6fb;
+    --card-radius: 14px;
+  }
+  body { background: var(--bg); font-size: 14px; }
+  .navbar { background: linear-gradient(90deg, #10275c 0%, #1d4ed8 100%); position: fixed; top: 0; left: 0; right: 0; z-index: 1030; box-shadow: 0 2px 8px rgba(16,39,92,.25); }
+  .page-scroll { position: fixed; top: var(--nav-h, 58px); left: 0; right: 0; bottom: 0; overflow-y: auto; }
+  .navbar .badge { font-weight: 500; }
+  .nav-tabs .nav-link { color: #55627a; border: none; padding: 12px 20px; font-weight: 600; }
+  .nav-tabs .nav-link.active { color: var(--primary); border-bottom: 3px solid var(--primary); background: transparent; }
+  .card { border: none; border-radius: var(--card-radius); box-shadow: 0 1px 4px rgba(16,39,92,.08); }
+  .kpi-card { position: relative; overflow: hidden; }
+  .kpi-card .kpi-icon { width: 46px; height: 46px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 22px; }
+  .kpi-value { font-size: 28px; font-weight: 700; color: #10275c; line-height: 1.2; }
+  .kpi-label { color: #6b7490; }
+  .table thead th { color: #6b7490; font-weight: 600; border-bottom: 1px solid #e7eaf3; white-space: nowrap; }
+  .table td { vertical-align: middle; }
+  .raw-cell { max-width: 360px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #ticketTable th, #ticketTable td, #overdueTable th, #overdueTable td { text-align: center; }
+  #ticketTable td.raw-cell, #overdueTable td.raw-cell,
+  #ticketTable td[colspan], #overdueTable td[colspan] { text-align: left; }
+  .badge-cat-仓储 { background: #e6f4ea; color: #137333; }
+  .badge-cat-运输 { background: #e8effd; color: #1d4ed8; }
+  .badge-cat-关务 { background: #fef3e2; color: #b45309; }
+  .badge-cat-账单 { background: #f3e8fd; color: #7c3aed; }
+  .badge-cat-其他 { background: #eef1f6; color: #55627a; }
+  .badge-urg-高 { background: #fde8e8; color: #c0392b; }
+  .badge-urg-中 { background: #fef3e2; color: #d97706; }
+  .badge-urg-低 { background: #eef1f6; color: #6b7490; }
+  .badge-st-待处理 { background: #fde8e8; color: #c0392b; }
+  .badge-st-AI已处理 { background: #e8effd; color: #1d4ed8; }
+  .badge-st-人工处理 { background: #fef3e2; color: #b45309; }
+  .badge-st-已关闭 { background: #eef1f6; color: #6b7490; }
+  .chat-box { height: 420px; overflow-y: auto; padding: 16px; background: #f8f9fd; border-radius: 12px; }
+  .msg-q, .msg-a { max-width: 86%; margin-bottom: 14px; padding: 10px 14px; border-radius: 12px; line-height: 1.65; white-space: pre-wrap; word-break: break-word; }
+  .msg-q { background: var(--primary); color: #fff; margin-left: auto; border-bottom-right-radius: 2px; }
+  .msg-a { background: #fff; border: 1px solid #e7eaf3; border-bottom-left-radius: 2px; }
+  .msg-a .src-chip { display: inline-block; background: var(--primary-soft); color: var(--primary); border-radius: 20px; padding: 1px 10px; font-size: 12px; margin: 2px 4px 0 0; cursor: pointer; }
+  .msg-a .src-chip:hover { background: #d5e2fb; }
+  .mono { font-family: SFMono-Regular, Consolas, monospace; }
+  .dropdown-menu { font-size: 13px; --bs-dropdown-min-width: 9rem; box-shadow: 0 6px 20px rgba(16,39,92,.15); }
+  .dropdown-item.active, .dropdown-item:active { background: var(--primary); }
+  .dropdown-toggle::after { margin-left: .4em; }
+  .chart-box { height: 300px; }
+  .form-label { font-weight: 600; color: #3a4562; }
+  .btn-primary { background: var(--primary); border-color: var(--primary); }
+  .cursor-pointer { cursor: pointer; }
+  .page-link { color: var(--primary); }
+  .page-item.active .page-link { background: var(--primary); border-color: var(--primary); }
+  .ai-result-card { border-left: 4px solid var(--primary); }
+  footer { color: #9aa3b8; font-size: 12px; }
+</style>
+</head>
+<body>
+
+<nav class="navbar navbar-dark px-4 py-2">
+  <span class="navbar-brand fw-bold">🚢 Logistics Copilot <small class="fw-normal opacity-75">跨境物流智能客服工作台</small></span>
+  <div class="d-flex align-items-center gap-2 text-white">
+    <span class="badge rounded-pill" id="aiModeBadge">AI 模式检测中…</span>
+    <span class="badge rounded-pill bg-light text-dark" id="dbBadge">DB</span>
+  </div>
+</nav>
+
+<div class="page-scroll">
+<div class="container-fluid px-4 pb-4">
+  <ul class="nav nav-tabs mt-3" role="tablist">
+    <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-tickets" type="button">📋 工单台</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-qa" type="button">💬 知识库问答</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-dashboard" type="button">📊 运营看板</button></li>
+  </ul>
+
+  <div class="tab-content bg-white p-4 rounded-bottom shadow-sm">
+    <!-- ================= 工单台 ================= -->
+    <div class="tab-pane fade show active" id="tab-tickets">
+      <div class="row g-3 mb-3">
+        <div class="col-lg-7">
+          <div class="card p-3 h-100">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="fw-bold">🤖 粘贴原始消息 → AI 自动处理</span>
+              <span class="text-muted small">提取字段 / 分类 / 紧急度 / 建议回复</span>
+            </div>
+            <textarea id="pasteText" class="form-control mb-2" rows="3"
+              placeholder="示例：您好，我们的货在洛杉矶海关被查验了，提单号COSU664512345，说品名不符被扣货了，客户非常着急，怎么办？"></textarea>
+            <div class="d-flex gap-2">
+              <div class="dropdown" data-filter="channel" data-all="渠道：自动识别"></div>
+              <button class="btn btn-primary px-4" onclick="submitPaste()">AI 处理入库</button>
+            </div>
+            <div id="pasteResult" class="mt-3"></div>
+          </div>
+        </div>
+        <div class="col-lg-5">
+          <div class="card p-3 h-100">
+            <div class="fw-bold mb-2">📥 批量导入 CSV</div>
+            <p class="text-muted small mb-2">列需含 <code>raw_text</code>（或 <code>消息内容</code>），可选 <code>channel</code>、<code>created_at</code>。每条自动经过 AI 管道。</p>
+            <input type="file" class="form-control" id="csvFile" accept=".csv">
+            <div class="text-muted small mt-2">演示文件：<span class="mono">data/import_demo.csv</span>（12 条未入库消息，导入后看 AI 逐条处理）</div>
+            <div id="importResult" class="mt-2"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card p-3">
+        <div class="row g-2 align-items-center mb-3">
+          <div class="col-auto"><div class="dropdown" data-filter="category" data-all="全部分类"></div></div>
+          <div class="col-auto"><div class="dropdown" data-filter="urgency" data-all="全部紧急度"></div></div>
+          <div class="col-auto"><div class="dropdown" data-filter="status" data-all="全部状态"></div></div>
+          <div class="col-auto"><input id="fSearch" class="form-control form-control-sm" style="width:220px"
+            placeholder="搜提单号/柜号/关键词" onkeydown="if(event.key==='Enter')reloadTickets()"></div>
+          <div class="col-auto"><button class="btn btn-sm btn-outline-secondary" onclick="reloadTickets()">🔍 查询</button></div>
+          <div class="col text-end text-muted small" id="ticketTotal"></div>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-hover align-middle" id="ticketTable">
+            <thead><tr><th>序号</th><th>时间</th><th>渠道</th><th>分类</th><th>紧急</th><th>意图</th>
+              <th>提单号</th><th>柜号</th><th>起运→目的</th><th>原始消息</th><th>状态</th><th></th></tr></thead>
+            <tbody id="ticketRows"></tbody>
+          </table>
+        </div>
+        <nav><ul class="pagination pagination-sm justify-content-center mb-0">
+          <li class="page-item" id="pgPrev"><a class="page-link" href="#" onclick="pageMove(-1);return false;">上一页</a></li>
+          <li class="page-item disabled"><span class="page-link" id="pgInfo">1 / 1</span></li>
+          <li class="page-item" id="pgNext"><a class="page-link" href="#" onclick="pageMove(1);return false;">下一页</a></li>
+        </ul></nav>
+      </div>
+    </div>
+
+    <!-- ================= 知识库问答 ================= -->
+    <div class="tab-pane fade" id="tab-qa">
+      <div class="row g-3">
+        <div class="col-lg-8">
+          <div class="card p-3">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="fw-bold">📚 新人问答台 · RAG 检索 + 来源标注</span>
+              <span class="text-muted small">答不上会自动建议转人工</span>
+            </div>
+            <div class="chat-box mb-3" id="chatBox">
+              <div class="text-center text-muted small pt-4" id="chatHint">试着问：<br>“滞箱费怎么算？”“出口报关需要哪些资料？”“免堆期是几天？”“货物破损怎么索赔？”</div>
+            </div>
+            <div class="input-group">
+              <input id="qaInput" class="form-control" placeholder="输入问题，例如：滞箱费怎么算？" onkeydown="if(event.key==='Enter')askQA()">
+              <button class="btn btn-primary px-4" onclick="askQA()">提问</button>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-4">
+          <div class="card p-3">
+            <div class="fw-bold mb-2">🗂 知识库文档（kb/ 目录）</div>
+            <div class="text-muted small mb-2">Obsidian Markdown 维护，脚本幂等同步入库</div>
+            <div class="table-responsive" style="max-height:420px;overflow-y:auto">
+              <table class="table table-sm"><thead><tr><th>文档</th><th>切块</th><th>更新</th></tr></thead>
+              <tbody id="kbRows"></tbody></table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= 运营看板 ================= -->
+    <div class="tab-pane fade" id="tab-dashboard">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div class="fw-bold fs-5">📈 运营看板 <span class="text-muted small fs-6">（指标全部由 SQL 聚合）</span></div>
+        <button class="btn btn-sm btn-outline-primary" onclick="loadDashboard(true)">🔄 刷新</button>
+      </div>
+      <div class="row g-3 mb-3" id="kpiRow">
+        <div class="col-md-3"><div class="card kpi-card p-3"><div class="d-flex justify-content-between align-items-center">
+          <div><div class="kpi-label">今日工单量</div><div class="kpi-value" id="kpiToday">–</div></div>
+          <div class="kpi-icon" style="background:#e8effd">📬</div></div><div class="text-muted small mt-1" id="kpiTodaySub"></div></div></div>
+        <div class="col-md-3"><div class="card kpi-card p-3"><div class="d-flex justify-content-between align-items-center">
+          <div><div class="kpi-label">AI 自动处理率</div><div class="kpi-value" id="kpiAiRate">–</div></div>
+          <div class="kpi-icon" style="background:#e6f4ea">🤖</div></div><div class="text-muted small mt-1" id="kpiAiSub"></div></div></div>
+        <div class="col-md-3"><div class="card kpi-card p-3"><div class="d-flex justify-content-between align-items-center">
+          <div><div class="kpi-label">平均首次响应</div><div class="kpi-value" id="kpiResp">–</div></div>
+          <div class="kpi-icon" style="background:#fef3e2">⏱</div></div><div class="text-muted small mt-1">工单接收到首次回复</div></div></div>
+        <div class="col-md-3"><div class="card kpi-card p-3"><div class="d-flex justify-content-between align-items-center">
+          <div><div class="kpi-label">高紧急占比</div><div class="kpi-value" id="kpiUrgent">–</div></div>
+          <div class="kpi-icon" style="background:#fde8e8">🔥</div></div><div class="text-muted small mt-1" id="kpiUrgSub"></div></div></div>
+      </div>
+      <div class="row g-3 mb-3">
+        <div class="col-lg-7"><div class="card p-3"><div class="fw-bold mb-1">近 7 日工单趋势</div><div id="chartTrend" class="chart-box"></div></div></div>
+        <div class="col-lg-5"><div class="card p-3"><div class="fw-bold mb-1">分类分布</div><div id="chartCategory" class="chart-box"></div></div></div>
+      </div>
+      <div class="row g-3">
+        <div class="col-lg-5"><div class="card p-3"><div class="fw-bold mb-1">Top 意图</div><div id="chartIntent" class="chart-box"></div></div></div>
+        <div class="col-lg-7"><div class="card p-3">
+          <div class="fw-bold mb-2">⚠️ 超时工单（响应超 <span id="overdueHours">4</span> 小时）</div>
+          <div class="table-responsive"><table class="table table-sm table-hover" id="overdueTable">
+            <thead><tr><th>序号</th><th>分类</th><th>紧急</th><th>状态</th><th>创建时间</th><th>已等待</th><th>消息</th></tr></thead>
+            <tbody id="overdueRows"></tbody></table></div>
+        </div></div>
+      </div>
+    </div>
+  </div>
+  <footer class="text-center mt-4">Logistics Copilot · 演示项目 · <b>所有数据均为模拟数据</b>（管道真实、数据为造） · FastAPI + SQLAlchemy + RAG + ECharts</footer>
+</div>
+</div>
+
+<!-- 工单详情 Modal -->
+<div class="modal fade" id="ticketModal" tabindex="-1"><div class="modal-dialog modal-lg modal-dialog-scrollable"><div class="modal-content">
+  <div class="modal-header py-2"><h6 class="modal-title fw-bold">工单详情 <span id="tdId" class="text-muted"></span></h6>
+    <button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+  <div class="modal-body" id="ticketDetail"></div>
+</div></div></div>
+
+<!-- 知识库文档 Modal -->
+<div class="modal fade" id="kbModal" tabindex="-1"><div class="modal-dialog modal-lg modal-dialog-scrollable"><div class="modal-content">
+  <div class="modal-header py-2"><h6 class="modal-title fw-bold" id="kbModalTitle">文档</h6>
+    <button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+  <div class="modal-body"><pre id="kbModalBody" style="white-space:pre-wrap;font-size:13px;background:#f8f9fd;padding:14px;border-radius:10px"></pre></div>
+</div></div></div>
+
+<script src="/web/vendor/bootstrap.bundle.min.js"></script>
+<script src="/web/vendor/echarts.min.js"></script>
+<script>
+const API = "";
+let ticketPage = 1, ticketPageSize = 15;
+const charts = {};
+let kbDocsCache = [];
+const filterValues = {};   // 自定义下拉的当前值（category/urgency/status/channel）
+
+// ---------- 自定义下拉（替代原生 select，弹层样式全可控） ----------
+const FILTER_OPTIONS = {
+  category: ["仓储", "运输", "关务", "账单", "其他"],
+  urgency: ["高", "中", "低"],
+  status: ["待处理", "AI已处理", "人工处理", "已关闭"],
+  channel: ["email", "wechat", "phone"],
+};
+function initDropdowns() {
+  document.querySelectorAll("[data-filter]").forEach(dd => {
+    const key = dd.dataset.filter, all = dd.dataset.all;
+    filterValues[key] = "";
+    const options = FILTER_OPTIONS[key] || [];
+    dd.innerHTML = `
+      <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">${all}</button>
+      <ul class="dropdown-menu shadow">
+        <li><a class="dropdown-item active" href="#" data-v="">${all}</a></li>
+        ${options.map(o => `<li><a class="dropdown-item" href="#" data-v="${o}">${o}</a></li>`).join("")}
+      </ul>`;
+    dd.addEventListener("click", e => {
+      const item = e.target.closest(".dropdown-item");
+      if (!item) return;
+      e.preventDefault();
+      dd.querySelectorAll(".dropdown-item").forEach(i => i.classList.remove("active"));
+      item.classList.add("active");
+      filterValues[key] = item.dataset.v;
+      dd.querySelector(".dropdown-toggle").textContent = item.dataset.v ? item.textContent : all;
+      if (key !== "channel") { ticketPage = 1; reloadTickets(); }
+    });
+  });
+}
+
+// ---------- 工具 ----------
+const esc = s => (s ?? "").toString().replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+const badge = (v, kind) => v ? `<span class="badge badge-${kind}-${esc(v)}">${esc(v)}</span>` : "–";
+async function api(path, opts) {
+  const resp = await fetch(API + path, opts);
+  if (!resp.ok) {
+    let detail = resp.statusText;
+    try { detail = (await resp.json()).detail || detail; } catch (e) {}
+    throw new Error(detail);
+  }
+  return resp.json();
+}
+function copyText(text, btn) {
+  const done = () => { const old = btn.textContent; btn.textContent = "✓ 已复制"; setTimeout(() => btn.textContent = old, 1500); };
+  if (navigator.clipboard) navigator.clipboard.writeText(text).then(done);
+  else { const ta = document.createElement("textarea"); ta.value = text; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); ta.remove(); done(); }
+}
+
+// ---------- 健康检查 ----------
+async function loadHealth() {
+  try {
+    const h = await api("/api/health");
+    const llm = h.ai_mode === "llm";
+    document.getElementById("aiModeBadge").className = "badge rounded-pill " + (llm ? "bg-success" : "bg-warning text-dark");
+    document.getElementById("aiModeBadge").textContent = llm ? `AI 模式：LLM（${h.llm_model}）` : "AI 模式：规则/mock（未配置 Key，已降级）";
+    document.getElementById("dbBadge").textContent = `DB ${h.db_dialect} · 工单 ${h.tickets} · 知识库 ${h.kb_docs}`;
+  } catch (e) { document.getElementById("aiModeBadge").textContent = "服务未连接"; }
+}
+
+// ---------- 工单台 ----------
+async function reloadTickets() {
+  const p = new URLSearchParams({ page: ticketPage, page_size: ticketPageSize });
+  for (const k of ["category", "urgency", "status"]) {
+    const v = filterValues[k]; if (v) p.set(k, v);
+  }
+  const q = document.getElementById("fSearch").value.trim(); if (q) p.set("q", q);
+  const data = await api("/api/tickets?" + p);
+  document.getElementById("ticketTotal").textContent = `共 ${data.total} 条`;
+  document.getElementById("ticketRows").innerHTML = data.items.map((t, i) => {
+    const route = t.pol && t.pod ? `${esc(t.pol)} → ${esc(t.pod)}` : (t.pol || t.pod ? esc(t.pol || t.pod) : "—");
+    return `
+    <tr>
+      <td class="text-muted">${(data.page - 1) * data.page_size + i + 1}</td>
+      <td class="text-muted small">${esc((t.created_at||"").slice(5,16))}</td>
+      <td class="small text-muted">${t.channel ? esc(t.channel) : "—"}</td>
+      <td>${badge(t.category,"cat")}</td>
+      <td>${badge(t.urgency,"urg")}</td>
+      <td class="small">${t.intent ? esc(t.intent) : "—"}</td>
+      <td class="mono small">${t.bill_no ? esc(t.bill_no) : "—"}</td>
+      <td class="mono small">${t.container_no ? esc(t.container_no) : "—"}</td>
+      <td class="small">${route}</td>
+      <td class="raw-cell small text-muted" title="${esc(t.raw_text)}">${esc(t.raw_text)}</td>
+      <td>${badge(t.status,"st")}</td>
+      <td><button class="btn btn-sm btn-outline-primary py-0" onclick="showTicket(${t.id})">详情</button></td>
+    </tr>`;}).join("") || `<tr><td colspan="12" class="text-center text-muted py-4">暂无数据</td></tr>`;
+  const totalPages = Math.max(1, Math.ceil(data.total / data.page_size));
+  document.getElementById("pgInfo").textContent = `${data.page} / ${totalPages}`;
+  document.getElementById("pgPrev").classList.toggle("disabled", data.page <= 1);
+  document.getElementById("pgNext").classList.toggle("disabled", data.page >= totalPages);
+}
+function pageMove(d) { ticketPage = Math.max(1, ticketPage + d); reloadTickets(); }
+
+async function submitPaste() {
+  const raw = document.getElementById("pasteText").value.trim();
+  if (!raw) return alert("请先粘贴一条客户原始消息");
+  const channel = filterValues.channel || undefined;
+  const body = { raw_text: raw }; if (channel) body.channel = channel;
+  const t = await api("/api/tickets", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+  document.getElementById("pasteResult").innerHTML = `
+    <div class="card ai-result-card p-3">
+      <div class="d-flex justify-content-between"><b>✨ AI 处理结果（工单 #${t.id} 已入库）</b>
+      <span class="badge bg-secondary">${esc(t.ai_mode)}</span></div>
+      <div class="mt-2 small">分类 ${badge(t.category,"cat")} · 紧急度 ${badge(t.urgency,"urg")} · 意图 <b>${esc(t.intent||"–")}</b>
+       · 提单号 <b class="mono">${esc(t.bill_no||"未识别")}</b> · 柜号 <b class="mono">${esc(t.container_no||"未识别")}</b><br>
+       起运港 <b>${esc(t.pol||"–")}</b> → 目的港 <b>${esc(t.pod||"–")}</b></div>
+      <div class="mt-2 small text-muted">AI 建议回复</div>
+      <div class="border rounded p-2 bg-light small">${esc(t.suggested_reply)}</div>
+      <div class="mt-2"><button class="btn btn-sm btn-outline-primary" onclick='copyText(${JSON.stringify(t.suggested_reply)}, this)'>📋 一键复制建议回复</button></div>
+    </div>`;
+  document.getElementById("pasteText").value = "";
+  ticketPage = 1; reloadTickets();
+}
+
+async function importCsv(input) {
+  if (!input.files.length) return;
+  const fd = new FormData(); fd.append("file", input.files[0]);
+  document.getElementById("importResult").innerHTML = `<span class="text-muted small">⏳ AI 处理中…</span>`;
+  try {
+    const r = await api("/api/tickets/import", { method: "POST", body: fd });
+    document.getElementById("importResult").innerHTML =
+      `<div class="alert alert-success py-2 small mb-0">✅ 导入 ${r.imported} 条（AI 模式：${esc(r.ai_mode)}${r.failed ? "，失败 " + r.failed + " 条" : ""}），列表已刷新</div>`;
+  } catch (e) {
+    document.getElementById("importResult").innerHTML = `<div class="alert alert-danger py-2 small mb-0">❌ ${esc(e.message)}</div>`;
+  }
+  input.value = ""; ticketPage = 1; reloadTickets();
+}
+document.getElementById("csvFile").addEventListener("change", function(){ importCsv(this); });
+
+async function showTicket(id) {
+  const t = await api("/api/tickets/" + id);
+  document.getElementById("tdId").textContent = "#" + t.id;
+  const row = (k, v) => `<tr><th class="text-muted fw-normal" style="width:110px">${k}</th><td>${v || "—"}</td></tr>`;
+  document.getElementById("ticketDetail").innerHTML = `
+    <div class="row"><div class="col-md-7">
+      <table class="table table-sm small">
+        ${row("渠道", esc(t.channel||""))}${row("分类", badge(t.category,"cat"))}
+        ${row("紧急度", badge(t.urgency,"urg"))}${row("意图", esc(t.intent||""))}
+        ${row("提单号", t.bill_no ? `<b class="mono">${esc(t.bill_no)}</b>` : "")}
+        ${row("柜号", t.container_no ? `<b class="mono">${esc(t.container_no)}</b>` : "")}
+        ${row("起运港", esc(t.pol||""))}${row("目的港", esc(t.pod||""))}
+        ${row("状态", badge(t.status,"st"))}
+        ${row("创建时间", esc(t.created_at||""))}${row("首次响应", t.replied_at ? esc(t.replied_at) : "未响应")}
+      </table>
+    </div><div class="col-md-5">
+      <div class="small text-muted mb-1">原始求助消息</div>
+      <div class="border rounded p-2 bg-light small mb-3" style="white-space:pre-wrap">${esc(t.raw_text)}</div>
+    </div></div>
+    <div class="small text-muted mb-1">🤖 AI 建议回复（人审后发送）</div>
+    <div class="border rounded p-2 bg-light small mb-3" style="white-space:pre-wrap">${esc(t.suggested_reply)}</div>
+    <div class="d-flex gap-2">
+      <button class="btn btn-sm btn-primary" onclick='copyText(${JSON.stringify(t.suggested_reply)}, this)'>📋 复制建议回复</button>
+      <button class="btn btn-sm btn-outline-secondary" onclick="setStatus(${t.id},'人工处理')">转人工处理</button>
+      <button class="btn btn-sm btn-outline-secondary" onclick="setStatus(${t.id},'已关闭')">关闭工单</button>
+      <button class="btn btn-sm btn-outline-secondary" onclick="reprocess(${t.id})">🔄 重新 AI 处理</button>
+    </div>`;
+  new bootstrap.Modal("#ticketModal").show();
+}
+async function setStatus(id, status) { await api(`/api/tickets/${id}/status`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status }) }); bootstrap.Modal.getInstance(document.getElementById("ticketModal")).hide(); reloadTickets(); }
+async function reprocess(id) { await api(`/api/tickets/${id}/reprocess`, { method: "POST" }); bootstrap.Modal.getInstance(document.getElementById("ticketModal")).hide(); reloadTickets(); }
+
+// ---------- 知识库问答 ----------
+async function askQA() {
+  const input = document.getElementById("qaInput");
+  const q = input.value.trim(); if (!q) return;
+  input.value = "";
+  if (document.getElementById("chatHint")) document.getElementById("chatHint").remove();
+  const box = document.getElementById("chatBox");
+  box.insertAdjacentHTML("beforeend", `<div class="msg-q">${esc(q)}</div><div class="msg-a" id="pending">思考中…</div>`);
+  box.scrollTop = box.scrollHeight;
+  try {
+    const r = await api("/api/qa", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ question: q }) });
+    document.getElementById("pending").outerHTML = renderAnswer(r);
+  } catch (e) {
+    document.getElementById("pending").outerHTML = `<div class="msg-a">❌ ${esc(e.message)}</div>`;
+  }
+  box.scrollTop = box.scrollHeight;
+}
+function renderAnswer(r) {
+  const modeBadge = r.mode === "llm" ? '<span class="badge bg-success ms-1">LLM</span>'
+                  : r.mode === "mock" ? '<span class="badge bg-info text-dark ms-1">检索</span>'
+                  : '<span class="badge bg-secondary ms-1">未命中</span>';
+  const chips = r.sources.map(s => `<span class="src-chip" onclick="showKbDoc(${s.id})">📄 ${esc(s.title)}</span>`).join("");
+  const retrieved = r.retrieved.length ? `<details class="small text-muted mt-1"><summary>检索过程</summary>${r.retrieved.map(x=>`<div class="border-start ps-2 my-1">${esc(x)}</div>`).join("")}</details>` : "";
+  return `<div class="msg-a">${esc(r.answer)} ${modeBadge}<br>${chips}${retrieved}</div>`;
+}
+async function loadKbDocs() {
+  const docs = await api("/api/kb/docs");
+  kbDocsCache = docs;
+  document.getElementById("kbRows").innerHTML = docs.map(d => `
+    <tr class="cursor-pointer" onclick="showKbDoc(${d.id})">
+      <td class="small">📄 ${esc(d.title)}</td><td class="small text-muted">${d.chunks} 块</td>
+      <td class="small text-muted">${esc((d.updated_at||"").slice(0,10))}</td></tr>`).join("");
+}
+async function showKbDoc(id) {
+  const d = await api("/api/kb/docs/" + id);
+  document.getElementById("kbModalTitle").textContent = "📄 " + d.title;
+  document.getElementById("kbModalBody").textContent = d.content;
+  bootstrap.Modal.getOrCreateInstance(document.getElementById("kbModal")).show();
+}
+
+// ---------- 运营看板 ----------
+async function loadDashboard(force) {
+  const s = await api("/api/dashboard/summary");
+  const k = s.kpi;
+  document.getElementById("kpiToday").textContent = k.today_count;
+  document.getElementById("kpiTodaySub").textContent = `累计 ${k.total} 条`;
+  document.getElementById("kpiAiRate").textContent = k.ai_rate + "%";
+  document.getElementById("kpiAiSub").textContent = `AI已处理 ${k.ai_count} / ${k.total} 条`;
+  document.getElementById("kpiResp").textContent = k.avg_response_minutes == null ? "–"
+    : k.avg_response_minutes < 60 ? k.avg_response_minutes + " 分钟"
+    : (k.avg_response_minutes / 60).toFixed(1) + " 小时";
+  document.getElementById("kpiUrgent").textContent = k.urgent_rate + "%";
+  document.getElementById("kpiUrgSub").textContent = `高紧急 ${k.urgent_count} / ${k.total} 条`;
+  document.getElementById("overdueHours").textContent = s.overdue_hours_threshold;
+
+  drawTrend(s.trend); drawCategory(s.category_dist); drawIntent(s.top_intents);
+  document.getElementById("overdueRows").innerHTML = s.overdue.map((t, i) => `
+    <tr>
+      <td class="text-muted">${i + 1}</td><td>${badge(t.category,"cat")}</td>
+      <td>${badge(t.urgency,"urg")}</td><td>${badge(t.status,"st")}</td>
+      <td class="small text-muted">${esc((t.created_at||"").slice(5,16))}</td>
+      <td><span class="badge bg-danger">${t.waiting_hours ?? "–"} h</span></td>
+      <td class="raw-cell small text-muted" title="${esc(t.raw_text)}">${esc(t.raw_text)}</td>
+    </tr>`).join("") || `<tr><td colspan="7" class="text-center text-muted py-3">✅ 暂无超时工单</td></tr>`;
+}
+function drawTrend(trend) {
+  const el = document.getElementById("chartTrend");
+  charts.trend = charts.trend || echarts.init(el);
+  charts.trend.setOption({
+    tooltip: { trigger: "axis" },
+    grid: { left: 40, right: 20, top: 20, bottom: 30 },
+    xAxis: { type: "category", data: trend.map(t => t.date.slice(5)) },
+    yAxis: { type: "value", minInterval: 1 },
+    series: [{ type: "line", smooth: true, data: trend.map(t => t.count),
+      lineStyle: { width: 3, color: "#1d4ed8" },
+      areaStyle: { color: { type: "linear", x: 0, y: 0, x2: 0, y2: 1,
+        colorStops: [{ offset: 0, color: "rgba(29,78,216,.28)" }, { offset: 1, color: "rgba(29,78,216,0)" }] } },
+      itemStyle: { color: "#1d4ed8" }, symbolSize: 8 }]
+  });
+}
+function drawCategory(dist) {
+  const el = document.getElementById("chartCategory");
+  charts.category = charts.category || echarts.init(el);
+  const colors = { "运输": "#1d4ed8", "仓储": "#137333", "关务": "#d97706", "账单": "#7c3aed", "其他": "#94a3b8" };
+  charts.category.setOption({
+    tooltip: { trigger: "item", formatter: "{b}: {c} 条（{d}%）" },
+    legend: { bottom: 0, icon: "circle" },
+    series: [{ type: "pie", radius: ["42%", "68%"], center: ["50%", "45%"],
+      data: dist.map(d => ({ name: d.name, value: d.value, itemStyle: { color: colors[d.name] || "#94a3b8" } })),
+      label: { formatter: "{b}\n{d}%" } }]
+  });
+}
+function drawIntent(intents) {
+  const el = document.getElementById("chartIntent");
+  charts.intent = charts.intent || echarts.init(el);
+  charts.intent.setOption({
+    tooltip: {},
+    grid: { left: 70, right: 30, top: 10, bottom: 30 },
+    xAxis: { type: "value", minInterval: 1 },
+    yAxis: { type: "category", data: intents.map(i => i.name).reverse() },
+    series: [{ type: "bar", data: intents.map(i => i.value).reverse(), barWidth: 16,
+      itemStyle: { color: { type: "linear", x: 0, y: 0, x2: 1, y2: 0,
+        colorStops: [{ offset: 0, color: "#3b82f6" }, { offset: 1, color: "#1d4ed8" }] },
+        borderRadius: [0, 8, 8, 0] } }]
+  });
+}
+
+// ---------- Tab 切换联动 ----------
+document.querySelectorAll('[data-bs-toggle="tab"]').forEach(btn => {
+  btn.addEventListener("shown.bs.tab", e => {
+    if (e.target.dataset.bsTarget === "#tab-dashboard") {
+      loadDashboard();
+      setTimeout(() => Object.values(charts).forEach(c => c.resize()), 60);
+    }
+    if (e.target.dataset.bsTarget === "#tab-qa") loadKbDocs();
+  });
+});
+
+// ---------- 启动 ----------
+initDropdowns();
+loadHealth();
+reloadTickets();
+
+// 顶栏固定 + 内容区独立滚动：滚动条从头部下方开始
+function fitLayout() {
+  const nav = document.querySelector(".navbar");
+  document.documentElement.style.setProperty("--nav-h", nav.offsetHeight + "px");
+  Object.values(charts).forEach(c => c.resize());
+}
+window.addEventListener("resize", fitLayout);
+fitLayout();
+</script>
+</body>
+</html>
