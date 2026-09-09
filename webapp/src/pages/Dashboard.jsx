@@ -73,7 +73,7 @@ export default function Dashboard({ health }) {
       <div className="grid grid-cols-12 gap-5">
         <Reveal delay={0.1} className="col-span-8">
           <Card className="h-full">
-            <CardHead title="近 7 日工单趋势" sub="Daily ticket volume · SQL aggregated" right={<span className="flex items-center gap-1.5 text-[11.5px] text-ink3"><Radio size={12} className="ai-pulse text-blue-500" /> Live</span>} />
+            <CardHead title="近 7 日工单趋势" sub="每日工单量 · SQL 实时聚合" right={<span className="flex items-center gap-1.5 text-[11.5px] text-ink3"><Radio size={12} className="ai-pulse text-blue-500" /> 实时</span>} />
             {trend.length ? (
               <div className="h-[260px]">
                 <ResponsiveContainer width="100%" height="100%">
@@ -176,7 +176,7 @@ export default function Dashboard({ health }) {
 
         <Reveal delay={0.18} className="col-span-7">
           <Card className="h-full">
-            <CardHead title="超时工单 · SLA Risk" sub={`响应超 ${sum?.overdue_hours_threshold ?? 4} 小时未闭环`} right={<BadgeDanger n={sum?.overdue?.length ?? 0} />} />
+            <CardHead title="超时工单 · SLA 风险" sub={`响应超 ${sum?.overdue_hours_threshold ?? 4} 小时未闭环`} right={<BadgeDanger n={sum?.overdue?.length ?? 0} />} />
             {queue == null ? <Loading /> : queue.length === 0 ? <Empty text="✅ 暂无超时工单" /> : (
               <div className="space-y-1">
                 {queue.map((t) => (
@@ -200,7 +200,7 @@ export default function Dashboard({ health }) {
         <Reveal delay={0.1}>
           <Card className="relative overflow-hidden">
             <div className="pointer-events-none absolute -right-20 -top-24 h-64 w-64 rounded-full" style={{ background: "radial-gradient(circle, rgba(29,78,216,.10), transparent 65%)" }} />
-            <CardHead title="AI 运营洞察" sub={`${ins.mode === "llm" ? "LLM 生成 · glm-4-flash" : "规则模板生成"} · ${ins.generated_at?.slice(5, 16)}`} right={<span className="rounded-full bg-blue-50 px-3 py-1 text-[11.5px] font-medium text-blue-700">Insight</span>} />
+            <CardHead title="AI 运营洞察" sub={`${ins.mode === "llm" ? "LLM 生成 · glm-4-flash" : "规则模板生成"} · ${ins.generated_at?.slice(5, 16)}`} right={<span className="rounded-full bg-blue-50 px-3 py-1 text-[11.5px] font-medium text-blue-700">洞察</span>} />
             <div className="grid grid-cols-1 gap-2.5 lg:grid-cols-2">
               {String(ins.insight).split("\n").filter(Boolean).slice(0, 6).map((line, i) => (
                 <div key={i} className="flex items-start gap-2.5 rounded-2xl bg-surface2/60 px-4 py-3 text-[13px] leading-relaxed text-ink/85">

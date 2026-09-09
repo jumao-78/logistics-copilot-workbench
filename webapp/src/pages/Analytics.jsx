@@ -60,10 +60,10 @@ export default function Analytics() {
       </div>
 
       <div className="grid grid-cols-12 gap-5">
-        {/* SLA Health 径向 */}
+        {/* SLA 健康度 径向 */}
         <Reveal className="col-span-4">
           <Card className="h-full">
-            <CardHead title="SLA Health" sub="超时响应压力指数" />
+            <CardHead title="SLA 健康度" sub="超时响应压力指数" />
             <div className="relative h-[210px]">
               <ResponsiveContainer width="100%" height="100%">
                 <RadialBarChart innerRadius="72%" outerRadius="100%" data={sla} startAngle={220} endAngle={-40}>
@@ -76,7 +76,7 @@ export default function Analytics() {
               </ResponsiveContainer>
               <div className="num absolute inset-0 flex flex-col items-center justify-center">
                 <span className="text-[30px] font-semibold text-ink">{sla[0]?.value}%</span>
-                <span className="mt-1 text-[11px] text-ink3">无超时 = 100</span>
+                <span className="mt-1 text-[11px] text-ink3">无超时即 100</span>
               </div>
             </div>
             <div className="mt-1 grid grid-cols-3 gap-2 text-center">
@@ -90,7 +90,7 @@ export default function Analytics() {
         {/* 延迟分布 */}
         <Reveal delay={0.08} className="col-span-4">
           <Card className="h-full">
-            <CardHead title="Delay Distribution" sub="首响耗时分布（近 7 日估算）" />
+            <CardHead title="响应延迟分布" sub="首响耗时分布（近 7 日估算）" />
             <div className="h-[230px]">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={delayDist} margin={{ top: 8, right: 8, left: -18, bottom: 0 }}>
@@ -108,7 +108,7 @@ export default function Analytics() {
         {/* 地区分布雷达 */}
         <Reveal delay={0.16} className="col-span-4">
           <Card className="h-full">
-            <CardHead title="Country Distribution" sub="航线区域工单量" />
+            <CardHead title="航线区域分布" sub="航线区域工单量" />
             <div className="h-[230px]">
               <ResponsiveContainer width="100%" height="100%">
                 <RadarChart data={geo} outerRadius="72%">
@@ -127,13 +127,13 @@ export default function Analytics() {
         {/* AI 质量雷达 */}
         <Reveal className="col-span-5">
           <Card className="h-full">
-            <CardHead title="AI Resolution Quality" sub="20 条标注集 · mock 基线 vs LLM" />
+            <CardHead title="AI 处理质量" sub="20 条标注集 · mock 基线 vs LLM" />
             <div className="h-[250px]">
               <ResponsiveContainer width="100%" height="100%">
                 <RadarChart data={agents.map((a) => ({ ...a, mock: 100, llm: a.name === "意图" ? 80 : a.name === "紧急度" ? 65 : 95 }))} outerRadius="68%">
                   <PolarGrid stroke="rgba(148,163,184,.2)" />
                   <PolarAngleAxis dataKey="name" tick={{ fontSize: 11, fill: "#64748b" }} />
-                  <Radar name="Rule" dataKey="mock" stroke="#94a3b8" strokeWidth={1.6} fill="#94a3b8" fillOpacity={0.14} />
+                  <Radar name="规则" dataKey="mock" stroke="#94a3b8" strokeWidth={1.6} fill="#94a3b8" fillOpacity={0.14} />
                   <Radar name="LLM" dataKey="llm" stroke="#4f46e5" strokeWidth={2} fill="#4f46e5" fillOpacity={0.2} />
                   <Legend wrapperStyle={{ fontSize: 11.5 }} />
                   <Tooltip {...TOOLTIP} />
@@ -146,7 +146,7 @@ export default function Analytics() {
         {/* QA 会话流 */}
         <Reveal delay={0.08} className="col-span-7">
           <Card className="h-full">
-            <CardHead title="Live QA Sessions" sub="知识库问答留痕（qa_logs）" right={<Badge tone="gray">{logs.length} 条</Badge>} />
+            <CardHead title="问答会话记录" sub="知识库问答留痕（qa_logs）" right={<Badge tone="gray">{logs.length} 条</Badge>} />
             {logs.length === 0 ? (
               <Empty text="还没有问答记录——去 Knowledge 页问一个问题试试" />
             ) : (

@@ -75,16 +75,16 @@ export default function AgentFlow({ health }) {
                 >
                   <div className="mb-3 flex items-center justify-between">
                     <div className={`flex h-9 w-9 items-center justify-center rounded-xl ${a.tint}`}><a.icon size={16} /></div>
-                    {active ? <Loader2 size={15} className="animate-spin text-blue-600" /> : done ? <CheckCircle2 size={15} className="text-emerald-500" /> : <span className="num text-[10.5px] text-ink3">idle</span>}
+                    {active ? <Loader2 size={15} className="animate-spin text-blue-600" /> : done ? <CheckCircle2 size={15} className="text-emerald-500" /> : <span className="num text-[10.5px] text-ink3">待命</span>}
                   </div>
                   <div className="text-[13.5px] font-semibold text-ink">{a.name}</div>
                   <div className="mt-1 min-h-[34px] text-[11.5px] leading-snug text-ink2">{a.desc}</div>
                   <div className="mt-3 grid grid-cols-2 gap-2">
-                    <div className="rounded-lg bg-surface2/70 px-2 py-1.5"><div className="text-[9.5px] text-ink3">Latency</div><div className="num text-[11.5px] font-medium text-ink">{active ? "…" : `${lat(i)}ms`}</div></div>
-                    <div className="rounded-lg bg-surface2/70 px-2 py-1.5"><div className="text-[9.5px] text-ink3">Tokens</div><div className="num text-[11.5px] font-medium text-ink">{active ? "…" : tokens[i]}</div></div>
+                    <div className="rounded-lg bg-surface2/70 px-2 py-1.5"><div className="text-[9.5px] text-ink3">延迟</div><div className="num text-[11.5px] font-medium text-ink">{active ? "…" : `${lat(i)}ms`}</div></div>
+                    <div className="rounded-lg bg-surface2/70 px-2 py-1.5"><div className="text-[9.5px] text-ink3">Token 用量</div><div className="num text-[11.5px] font-medium text-ink">{active ? "…" : tokens[i]}</div></div>
                   </div>
                   <div className="mt-2.5 flex items-center gap-1 text-[10.5px] text-ink3">
-                    <Gauge size={11} /> {active ? "working…" : done ? "output ready" : "pending"}
+                    <Gauge size={11} /> {active ? "处理中…" : done ? "输出就绪" : "待运行"}
                   </div>
                 </motion.div>
                 {i < 3 && <Connector active={running && (stage > i || stage === i)} />}

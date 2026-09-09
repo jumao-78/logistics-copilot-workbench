@@ -3,12 +3,12 @@ import { LayoutDashboard, Inbox, BookOpen, Workflow, BarChart3, Settings, Ship, 
 import { cls } from "../api.js";
 
 const NAV = [
-  { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, sub: "运营总览" },
-  { id: "inbox", label: "Inbox", icon: Inbox, sub: "工单与 AI Copilot" },
-  { id: "knowledge", label: "Knowledge", icon: BookOpen, sub: "知识库检索" },
-  { id: "flow", label: "Agent Flow", icon: Workflow, sub: "AI 管道编排" },
-  { id: "analytics", label: "Analytics", icon: BarChart3, sub: "执行分析" },
-  { id: "settings", label: "Settings", icon: Settings, sub: "设置" },
+  { id: "dashboard", label: "总览", icon: LayoutDashboard, sub: "运营态势" },
+  { id: "inbox", label: "工单台", icon: Inbox, sub: "AI 建议回复" },
+  { id: "knowledge", label: "知识库", icon: BookOpen, sub: "RAG 检索问答" },
+  { id: "flow", label: "智能管道", icon: Workflow, sub: "Agent 编排" },
+  { id: "analytics", label: "数据分析", icon: BarChart3, sub: "执行洞察" },
+  { id: "settings", label: "设置", icon: Settings, sub: "工作区配置" },
 ];
 
 export default function Sidebar({ page, setPage }) {
@@ -55,10 +55,10 @@ export default function Sidebar({ page, setPage }) {
         {/* Footer status */}
         <div className="mt-auto rounded-2xl bg-surface2/70 p-3">
           <div className="flex items-center gap-2 text-[11.5px] font-medium text-ink">
-            <Bot size={14} className="grad-text" /> 4 AI Agents Active
+            <Bot size={14} className="grad-text" /> 4 个 Agent 持续运行
           </div>
           <div className="mt-2 flex items-center justify-between text-[10.5px] text-ink3">
-            <span>Rule / LLM mode</span>
+            <span>规则 / LLM 模式</span>
             <span className="num">v2.0</span>
           </div>
         </div>

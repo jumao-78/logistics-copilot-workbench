@@ -35,7 +35,7 @@ export default function Knowledge({ health }) {
           <p className="mt-1 text-[13.5px] text-ink2">检索增强问答 · 带来源引用 · 答不上自动建议转人工</p>
         </div>
         <div className="flex items-center gap-2 text-[12px] text-ink2">
-          <Dot tone={llm ? "success" : "warning"} pulse /> {llm ? "LLM answer" : "Retrieval mode"}
+          <Dot tone={llm ? "success" : "warning"} pulse /> {llm ? "LLM 回答" : "检索模式"}
         </div>
       </div>
 
@@ -88,7 +88,7 @@ export default function Knowledge({ health }) {
         {/* 右：引用 / 相关 */}
         <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.1 }} className="col-span-4 space-y-5">
           <Card className="p-5">
-            <div className="mb-3 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-ink2"><CornerDownRight size={12} /> Citations · {ans?.sources?.length ?? 0}</div>
+            <div className="mb-3 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-ink2"><CornerDownRight size={12} /> 引用来源 · {ans?.sources?.length ?? 0}</div>
             {ans && ans.sources.length > 0 ? (
               <div className="space-y-2">
                 {ans.sources.map((s) => (
@@ -105,7 +105,7 @@ export default function Knowledge({ health }) {
           </Card>
 
           <Card className="p-5">
-            <div className="mb-3 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-ink2"><Sparkles size={12} /> Related docs</div>
+            <div className="mb-3 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-ink2"><Sparkles size={12} /> 知识库文档</div>
             <div className="space-y-1.5">
               {docs.map((d) => (
                 <button key={d.id} onClick={() => api.kbDoc(d.id).then(setDetail).catch(() => {})} className="row-hover flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2 text-left">

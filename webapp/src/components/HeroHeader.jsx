@@ -6,9 +6,9 @@ import { Sparkles, Globe2, BookOpenCheck, Radar, Ship } from "lucide-react";
 export default function HeroHeader({ health }) {
   const llm = health?.ai_mode === "llm";
   const status = [
-    { icon: Radar, label: llm ? "LLM Connected" : "Rule Mode Active", tone: llm ? "text-emerald-200" : "text-amber-200", dot: llm ? "bg-emerald-300" : "bg-amber-300" },
-    { icon: Globe2, label: "FedEx API Connected", tone: "text-emerald-200", dot: "bg-emerald-300" },
-    { icon: BookOpenCheck, label: `Knowledge Synced · ${health?.kb_docs ?? "—"} docs`, tone: "text-cyan-200", dot: "bg-cyan-300" },
+    { icon: Radar, label: llm ? "LLM 已连接" : "规则模式运行中", tone: llm ? "text-emerald-200" : "text-amber-200", dot: llm ? "bg-emerald-300" : "bg-amber-300" },
+    { icon: Globe2, label: "FedEx API 已连接", tone: "text-emerald-200", dot: "bg-emerald-300" },
+    { icon: BookOpenCheck, label: `知识库已同步 · ${health?.kb_docs ?? "—"} 篇`, tone: "text-cyan-200", dot: "bg-cyan-300" },
   ];
 
   return (
@@ -60,15 +60,15 @@ export default function HeroHeader({ health }) {
       {/* 左下标题区 */}
       <div className="absolute bottom-9 left-10 max-w-[560px]">
         <div className="mb-2 flex items-center gap-2 text-[12px] font-semibold uppercase tracking-[0.22em] text-blue-200/80">
-          <Sparkles size={13} /> AI Customer Success Workspace
+          <Sparkles size={13} /> AI 智能客服工作台
         </div>
         <h1 className="display text-[40px] font-semibold leading-[1.05] tracking-[-0.02em] text-white">
-          Resolve global logistics tickets
+          让全球物流工单
           <br />
-          with AI-powered workflows.
+          用 AI 工作流自动闭环。
         </h1>
         <p className="mt-3 text-[14.5px] leading-relaxed text-blue-100/75">
-          {health ? `${health.tickets} tickets · ${health.kb_docs} knowledge docs · ${health.qa_logs} QA sessions` : "Connecting to workspace…"}
+          {health ? `${health.tickets} 张工单 · ${health.kb_docs} 篇知识库 · ${health.qa_logs} 次问答` : "正在连接工作区…"}
         </p>
       </div>
 
@@ -77,31 +77,44 @@ export default function HeroHeader({ health }) {
         Logistics Copilot
       </div>
 
-      {/* AI Orb —— 蓝色玻璃球 */}
+      {/* 航线轨道核心 —— 同心轨道 + 公转光点 + 中心发光核心 */}
       <motion.div
-        className="pointer-events-none absolute right-24 top-1/2 -translate-y-1/2"
-        initial={{ opacity: 0, scale: 0.8 }}
+        className="pointer-events-none absolute right-[8%] top-[57%] -translate-y-1/2"
+        initial={{ opacity: 0, scale: 0.85 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.45, duration: 0.9, ease: "easeOut" }}
       >
-        <div className="orb-float relative">
+        <div className="orb-float relative h-[196px] w-[196px]">
+          {/* 环境光晕 */}
           <div
-            className="h-40 w-40 rounded-full"
-            style={{
-              background:
-                "radial-gradient(circle at 32% 28%, rgba(191,219,254,.85), rgba(59,130,246,.34) 38%, rgba(30,58,138,.14) 70%, rgba(6,182,212,.30))",
-              boxShadow:
-                "inset 0 0 34px rgba(255,255,255,.28), inset -14px -18px 44px rgba(15,23,42,.35), 0 0 70px rgba(56,189,248,.42)",
-              backdropFilter: "blur(2px)",
-              border: "1px solid rgba(255,255,255,.28)",
-            }}
+            className="absolute -inset-8 rounded-full"
+            style={{ background: "radial-gradient(circle, rgba(56,189,248,.30), rgba(56,189,248,0) 68%)" }}
           />
-          {/* 内部结构线 */}
-          <div className="absolute inset-3 rounded-full border border-white/15" />
-          <div className="absolute inset-3 rounded-full" style={{ background: "linear-gradient(150deg, transparent 40%, rgba(103,232,249,.16) 60%, transparent 80%)" }} />
-          <div className="absolute left-1/2 top-1/2 h-1.5 w-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-cyan-200 ai-pulse shadow-[0_0_16px_rgba(165,243,252,.9)]" />
-          {/* 轨道环 */}
-          <div className="absolute -inset-5 rounded-full border border-white/8" />
+          {/* 轨道 1（外） */}
+          <div className="absolute inset-0 rounded-full border border-white/14" />
+          <div className="absolute inset-0 animate-[spin_16s_linear_infinite]">
+            <span className="absolute left-1/2 top-0 h-[5px] w-[5px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-cyan-200 shadow-[0_0_12px_rgba(165,243,252,1)]" />
+            <span className="absolute bottom-[4%] right-[7%] h-[4px] w-[4px] rounded-full bg-blue-300/90 shadow-[0_0_8px_rgba(147,197,253,.9)]" />
+          </div>
+          {/* 轨道 2（中，反向） */}
+          <div className="absolute inset-[10%] rounded-full border border-white/12" />
+          <div className="absolute inset-[10%] animate-[spin_24s_linear_infinite_reverse]">
+            <span className="absolute left-[8%] top-1/2 h-[4px] w-[4px] -translate-y-1/2 rounded-full bg-sky-200 shadow-[0_0_10px_rgba(186,230,253,1)]" />
+          </div>
+          {/* 轨道 3（内，快） */}
+          <div className="absolute inset-[22%] rounded-full border border-white/10" />
+          <div className="absolute inset-[22%] animate-[spin_10s_linear_infinite]">
+            <span className="absolute left-1/2 top-1/2 h-[4px] w-[4px] -translate-x-1/2 rounded-full bg-white shadow-[0_0_10px_rgba(255,255,255,.95)]" style={{ marginTop: "-50%" }} />
+          </div>
+          {/* 中心发光核心 */}
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+            <div className="relative flex h-9 w-9 items-center justify-center">
+              <div className="absolute inset-0 rounded-full bg-cyan-300/25 blur-[6px]" />
+              <div className="grad h-5 w-5 rounded-full shadow-[0_0_18px_rgba(56,189,248,.85)]" />
+              <div className="absolute inset-[-6px] rounded-full border border-white/25" />
+              <div className="absolute inset-[-12px] rounded-full border border-dashed border-white/12" />
+            </div>
+          </div>
         </div>
       </motion.div>
 

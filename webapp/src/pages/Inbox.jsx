@@ -67,7 +67,7 @@ function InboxList({ list, sel, setSel, q, setQ, onRefresh }) {
   );
 }
 
-/* 动态 Shipment Progress：流动光进度 + 六阶段节点 */
+/* 动态 货物运输进度：流动光进度 + 六阶段节点 */
 const SHIP_STEPS = ["订舱", "提柜", "截关", "开航", "到港", "清关"];
 function ShipmentProgress({ ticket }) {
   // 由真实字段推导当前阶段（视觉演示：字段越全阶段越深）
@@ -81,7 +81,7 @@ function ShipmentProgress({ ticket }) {
   return (
     <div className="mt-4">
       <div className="mb-2 flex items-center justify-between">
-        <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-ink3">Shipment Progress</span>
+        <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-ink3">货物运输进度</span>
         <span className="num text-[10.5px] font-medium text-blue-700">{stage}/{SHIP_STEPS.length} · {SHIP_STEPS[stage - 1]}</span>
       </div>
       <div className="relative">
@@ -139,25 +139,25 @@ function Detail({ ticket, onReload }) {
 
       <div className="mb-3 rounded-2xl bg-surface2/60 p-3.5 text-[13px] leading-relaxed text-ink/90">{ticket.raw_text}</div>
 
-      {/* Shipment Summary 卡片 */}
+      {/* 货物运输概览 卡片 */}
       <div className="mb-3 rounded-2xl border border-line bg-surface p-3.5">
         <div className="mb-2 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-ink2">
-          <Globe2 size={12} /> Shipment Summary
+          <Globe2 size={12} /> 货物运输概览
         </div>
         <div className="grid grid-cols-4 gap-2">
-          {field("提单号 Bill", ticket.bill_no)}
-          {field("柜号 Cntr", ticket.container_no)}
-          {field("起运港 POL", ticket.pol)}
-          {field("目的港 POD", ticket.pod)}
+          {field("提单号", ticket.bill_no)}
+          {field("柜号", ticket.container_no)}
+          {field("起运港", ticket.pol)}
+          {field("目的港", ticket.pod)}
         </div>
         {route && <div className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-3 py-1 text-[11.5px] text-blue-700"><MapPin size={11} /> {route}</div>}
 
-        {/* 动态 Shipment Progress */}
+        {/* 动态 货物运输进度 */}
         <ShipmentProgress ticket={ticket} />
       </div>
 
       {/* Timeline */}
-      <div className="mb-1 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-ink2"><Sparkles size={12} /> AI Timeline</div>
+      <div className="mb-1 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-ink2"><Sparkles size={12} /> AI 处理链路</div>
       <div className="mb-4 space-y-1">
         {[
           { icon: PenLine, t: "字段提取", d: `${ticket.category} / ${ticket.urgency} / ${ticket.intent || "其他"}`, tone: "bg-blue-50 text-blue-600" },
@@ -176,7 +176,7 @@ function Detail({ ticket, onReload }) {
       </div>
 
       {/* 客户对话（简版） */}
-      <div className="mb-1 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-ink2">Conversation</div>
+      <div className="mb-1 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-ink2">客户沟通</div>
       <div className="rounded-2xl border border-line bg-surface p-3.5">
         <div className="rounded-xl rounded-tl-sm bg-slate-100 px-3 py-2 text-[12.5px] leading-relaxed text-ink/85">{ticket.raw_text}</div>
         <div className="mt-1.5 text-right text-[11px] text-ink3">created {ticket.created_at?.slice(0, 16)}</div>
@@ -226,7 +226,7 @@ function Copilot({ ticket, health }) {
           <div className="text-[14px] font-semibold text-ink">AI Copilot</div>
           <div className="flex items-center gap-1 text-[11px] text-ink3">{llm ? <><Dot tone="success" pulse /> glm-4-flash</> : <><Dot tone="warning" /> Rule mode</>}</div>
         </div>
-        <span className="glass-none ml-auto rounded-full bg-blue-50 px-2.5 py-1 text-[10.5px] font-medium text-blue-700">Beta</span>
+        <span className="glass-none ml-auto rounded-full bg-blue-50 px-2.5 py-1 text-[10.5px] font-medium text-blue-700">AI</span>
       </div>
 
       {!ticket ? (
@@ -269,7 +269,7 @@ function Copilot({ ticket, health }) {
 
           {/* Suggested reply */}
           <div className="mb-2 flex items-center justify-between">
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-ink2">Suggested Reply</span>
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-ink2">建议回复</span>
             {thinking && <span className="flex items-center gap-1 text-[11px] text-blue-600"><Loader2 size={11} className="animate-spin" /> thinking…</span>}
           </div>
           <div className="mb-3 max-h-44 overflow-y-auto whitespace-pre-wrap rounded-2xl border border-line bg-surface p-3.5 text-[12.5px] leading-relaxed text-ink/90">
