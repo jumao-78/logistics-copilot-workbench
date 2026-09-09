@@ -29,6 +29,7 @@ logger = logging.getLogger("copilot.main")
 WEB_DIR = BASE_DIR / "web"
 
 VALID_STATUSES = ["待处理", "AI已处理", "人工处理", "已关闭"]
+DUP_WINDOW_MINUTES = 30  # 创建查重窗口（分钟）
 
 
 @asynccontextmanager
@@ -116,9 +117,30 @@ def _save_ticket(db: Session, data: dict, created_at: Optional[str] = None,
     return ticket
 
 
+def find_duplicate_ticket(db: Session, raw_text: str) -> Optional[Ticket]:
+    """防重放查重：同一条消息（精确内容）在窗口期内已提交过则返回已有工单。
+
+    窗口 DUP_WINDOW_MINUTES=30 分钟，避免把“不同时间同类问题”误判；
+    仅作用于 API 创建/导入路径，脚本直插（mock_data）不受影响。
+    """
+    text = (raw_text or "").strip()
+    if not text:
+        return None
+    cutoff = (datetime.now() - timedelta(minutes=DUP_WINDOW_MINUTES)).strftime("%Y-%m-%d %H:%M:%S")
+    return (
+        db.query(Ticket)
+        .filter(Ticket.raw_text == text, Ticket.created_at >= cutoff)
+        .order_by(Ticket.id.asc())
+        .first()
+    )
+
+
 @app.post("/api/tickets", response_model=TicketOut)
 def create_ticket(payload: TicketCreate, db: Session = Depends(get_db)):
     """粘贴一条原始求助消息 → AI 管道处理 → 入库并返回结构化工单。"""
+    dup = find_duplicate_ticket(db, payload.raw_text)
+    if dup:
+        raise HTTPException(409, detail=f"疑似重复工单 #{dup.id}：该消息在 30 分钟内已提交过，请勿重复创建")
     data = ai_pipeline.process_message(payload.raw_text, payload.channel, payload.use_llm)
     now = datetime.now()
     ticket = _save_ticket(
@@ -223,6 +245,11 @@ async def import_tickets(request: Request, file: Optional[UploadFile] = File(Non
     now = datetime.now()
     for row in rows:
         try:
+            dup = find_duplicate_ticket(db, row["raw_text"])
+            if dup:
+                failed += 1
+                logger.warning("导入跳过疑似重复工单 #%s：%s", dup.id, row["raw_text"][:30])
+                continue
             data = ai_pipeline.process_message(row["raw_text"], row.get("channel"))
             created_at = row.get("created_at") or now.strftime("%Y-%m-%d %H:%M:%S")
             # 导入的历史消息：AI 快速响应（2~10 分钟）作为首次响应时间
