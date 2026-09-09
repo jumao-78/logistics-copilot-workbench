@@ -15,11 +15,11 @@ const TOOLTIP = {
 
 /* Agent 绩效卡（指标为演示口径；真实评测见 docs/evaluation_report.md） */
 const AGENTS_PERF = [
-  { icon: Brain, tint: "bg-indigo-50 text-indigo-600", name: "Intent Agent", rows: [["意图识别准确率", "95%+"], ["演示任务", "1,200"], ["平均延迟", "96ms"]] },
-  { icon: Radar, tint: "bg-blue-50 text-blue-600", name: "Tracking Agent", rows: [["提单解析成功率", "99%+"], ["演示 API 调用", "850"], ["平均延迟", "128ms"]] },
-  { icon: BookOpen, tint: "bg-cyan-50 text-cyan-600", name: "Knowledge Agent", rows: [["知识片段命中", "96%+"], ["演示检索量", "2,300"], ["平均延迟", "156ms"]] },
-  { icon: Cpu, tint: "bg-violet-50 text-violet-600", name: "Reasoning Agent", rows: [["风险判定成功", "97%+"], ["演示任务", "980"], ["平均延迟", "204ms"]] },
-  { icon: PenLine, tint: "bg-emerald-50 text-emerald-600", name: "Reply Agent", rows: [["建议采纳率", "94%+"], ["演示生成", "1,100"], ["平均延迟", "142ms"]] },
+  { icon: Brain, tint: "bg-indigo-50 text-indigo-600", name: "Intent Agent", rows: [["意图识别准确率", "95%+"], ["演示任务", "1,200"], ["工具调用", "1,200"], ["平均延迟", "96ms"]] },
+  { icon: Radar, tint: "bg-blue-50 text-blue-600", name: "Tracking Agent", rows: [["提单解析成功率", "99%+"], ["演示 API 调用", "850"], ["工具调用", "850"], ["平均延迟", "128ms"]] },
+  { icon: BookOpen, tint: "bg-cyan-50 text-cyan-600", name: "Knowledge Agent", rows: [["知识片段命中", "96%+"], ["演示检索量", "2,300"], ["工具调用", "2,300"], ["平均延迟", "156ms"]] },
+  { icon: Cpu, tint: "bg-violet-50 text-violet-600", name: "Reasoning Agent", rows: [["风险判定成功", "97%+"], ["演示任务", "980"], ["工具调用", "980"], ["平均延迟", "204ms"]] },
+  { icon: PenLine, tint: "bg-emerald-50 text-emerald-600", name: "Reply Agent", rows: [["建议采纳率", "94%+"], ["演示生成", "1,100"], ["工具调用", "1,100"], ["平均延迟", "142ms"]] },
 ];
 
 /* ═══════ KPI：AI Impact（真实值 + 迷你趋势） ═══════ */
@@ -152,8 +152,8 @@ export default function Analytics({ health }) {
       {/* ═══ Header ═══ */}
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="display text-[30px] font-semibold tracking-[-0.02em] text-ink">AI Operations Intelligence</h1>
-          <p className="mt-1 text-[13.5px] text-ink2">监控 AI 表现与客服运营效率 · 数据为模拟口径</p>
+          <h1 className="display text-[30px] font-semibold tracking-[-0.02em] text-ink">数据分析 · AI Operations Intelligence</h1>
+          <p className="mt-1 text-[13.5px] text-ink2">长期视角：AI 为客服运营带来了什么价值 · 数据为模拟口径</p>
         </div>
         <div className="flex items-center gap-3">
           <span className="flex items-center gap-1.5 rounded-full border border-line bg-surface px-3.5 py-1.5 text-[12px] text-ink2">
@@ -184,30 +184,49 @@ export default function Analytics({ health }) {
           value="95%+" note="分类准确率 · 规则 100% / LLM 95%" trend={{ up: true, txt: "两轮调优后" }} goodUp spark={trend.map((t) => t.count)} delay={0.2} />
       </div>
 
-      {/* ═══ 3. AI Efficiency：左趋势 / 右漏斗 ═══ */}
+      {/* ═══ 3. AI Efficiency：左效率面板 / 右漏斗 ═══ */}
       <div className="grid grid-cols-12 items-stretch gap-5">
         <div className="col-span-7 flex flex-col">
           <Card className="flex flex-1 flex-col">
-            <CardHead title="工单处理趋势（近 7 日）" sub="每日工单量 · SQL 实时聚合" right={<Badge tone="primary">AI 自动处理率 {k?.ai_rate ?? "—"}%</Badge>} />
-            {trend.length ? (
-              <div className="h-[250px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={trend} margin={{ top: 8, right: 6, left: -16, bottom: 0 }}>
-                    <defs>
-                      <linearGradient id="trG" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#1d4ed8" stopOpacity={0.25} /><stop offset="60%" stopColor="#4f46e5" stopOpacity={0.08} /><stop offset="100%" stopColor="#06b6d4" stopOpacity={0} />
-                      </linearGradient>
-                      <linearGradient id="trL" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stopColor="#1d4ed8" /><stop offset="100%" stopColor="#06b6d4" /></linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 6" vertical={false} stroke="rgba(148,163,184,.15)" />
-                    <XAxis dataKey="date" tickFormatter={(v) => v.slice(5)} tick={{ fontSize: 11, fill: "#94a3b8" }} axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fontSize: 11, fill: "#94a3b8" }} axisLine={false} tickLine={false} allowDecimals={false} />
-                    <Tooltip {...TOOLTIP} />
-                    <Area type="monotone" dataKey="count" name="工单量" stroke="url(#trL)" strokeWidth={2.4} fill="url(#trG)" animationDuration={1000} />
-                  </AreaChart>
-                </ResponsiveContainer>
+            <CardHead title="AI Efficiency" sub="AI 处理 vs 人工介入的当前口径（累计）" right={<Badge tone="primary">长期价值</Badge>} />
+            <div className="flex flex-1 flex-col justify-center gap-4 px-2 py-3">
+              <div>
+                <div className="mb-1.5 flex items-end justify-between">
+                  <span className="text-[12.5px] font-medium text-ink2">AI 自动处理率</span>
+                  <span className="num text-[22px] font-semibold text-ink">{k?.ai_rate ?? "—"}%</span>
+                </div>
+                <div className="h-2.5 overflow-hidden rounded-full bg-surface2">
+                  <motion.div className="h-full rounded-full" style={{ background: "linear-gradient(90deg,#1d4ed8,#4f46e5 55%,#06b6d4)" }}
+                    initial={{ width: 0 }} animate={{ width: `${k?.ai_rate ?? 0}%` }} transition={{ duration: 1, ease: "easeOut" }} />
+                </div>
+                <div className="mt-1 text-[10.5px] text-ink3">AI 已处理 {k?.ai_count ?? "—"} / {k?.total ?? "—"} 条 · 回复由 AI 直接完成</div>
               </div>
-            ) : <Loading />}
+              <div>
+                <div className="mb-1.5 flex items-end justify-between">
+                  <span className="text-[12.5px] font-medium text-ink2">人工转接比例</span>
+                  <span className="num text-[22px] font-semibold text-ink">{handoff.rate}%</span>
+                </div>
+                <div className="h-2.5 overflow-hidden rounded-full bg-surface2">
+                  <motion.div className="h-full rounded-full" style={{ background: "linear-gradient(90deg,#f59e0b,#f97316)" }}
+                    initial={{ width: 0 }} animate={{ width: `${handoff.rate}%` }} transition={{ duration: 1, delay: 0.15, ease: "easeOut" }} />
+                </div>
+                <div className="mt-1 text-[10.5px] text-ink3">{handoff.count} 条需人工跟进 · 建议持续扩充自动处理覆盖</div>
+              </div>
+              <div>
+                <div className="mb-1.5 flex items-end justify-between">
+                  <span className="text-[12.5px] font-medium text-ink2">AI 回答质量（20 条评测）</span>
+                  <span className="num text-[22px] font-semibold text-ink">95%+</span>
+                </div>
+                <div className="h-2.5 overflow-hidden rounded-full bg-surface2">
+                  <motion.div className="h-full rounded-full" style={{ background: "linear-gradient(90deg,#10b981,#34d399)" }}
+                    initial={{ width: 0 }} animate={{ width: "95%" }} transition={{ duration: 1, delay: 0.3, ease: "easeOut" }} />
+                </div>
+                <div className="mt-1 text-[10.5px] text-ink3">分类准确率 · 规则 100% / LLM 95%+（两轮 Prompt 调优后）</div>
+              </div>
+              <div className="rounded-xl border border-dashed border-line px-3 py-2 text-[10.5px] leading-relaxed text-ink3">
+                口径说明：小时级运营见「总览」页；本页聚焦 AI 长期效率与质量（模拟数据，趋势需积累真实历史后展示）
+              </div>
+            </div>
           </Card>
         </div>
         <div className="col-span-5 flex flex-col">
@@ -267,9 +286,12 @@ export default function Analytics({ health }) {
               <Card className="p-4">
                 <div className="mb-2 flex items-center justify-between gap-2">
                   <span className="num truncate text-[12px] font-semibold text-ink">{r.bill_no || `#${r.id}`}</span>
-                  <span className={cls("shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold",
-                    r.urgency === "高" ? "bg-red-50 text-red-600" : r.urgency === "中" ? "bg-amber-50 text-amber-600" : "bg-emerald-50 text-emerald-600")}>
-                    {r.urgency}风险
+                  <span className="flex shrink-0 items-center gap-1">
+                    <span className="num rounded-full bg-slate-100 px-2 py-0.5 text-[9.5px] text-ink3">暴露 {r.waiting_hours ?? "—"}h</span>
+                    <span className={cls("rounded-full px-2 py-0.5 text-[10px] font-semibold",
+                      r.urgency === "高" ? "bg-red-50 text-red-600" : r.urgency === "中" ? "bg-amber-50 text-amber-600" : "bg-emerald-50 text-emerald-600")}>
+                      {r.urgency}风险
+                    </span>
                   </span>
                 </div>
                 <div className="mb-2 text-[11.5px] font-medium text-ink2">{r.riskType}</div>
