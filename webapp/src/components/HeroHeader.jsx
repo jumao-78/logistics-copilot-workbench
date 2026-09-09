@@ -1,13 +1,13 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { Sparkles, Globe2, BookOpenCheck, Radar, Ship } from "lucide-react";
+import { Sparkles, Database, BookOpenCheck, Radar, Ship } from "lucide-react";
 
 /* Hero Header — Vectrus Energy 灵感：mesh gradient + radial glow + AI Orb */
 export default function HeroHeader({ health }) {
   const llm = health?.ai_mode === "llm";
   const status = [
     { icon: Radar, label: llm ? "LLM 已连接" : "规则模式运行中", tone: llm ? "text-emerald-200" : "text-amber-200", dot: llm ? "bg-emerald-300" : "bg-amber-300" },
-    { icon: Globe2, label: "FedEx API 已连接", tone: "text-emerald-200", dot: "bg-emerald-300" },
+    { icon: Database, label: health ? `API 正常 · ${health.db_dialect}` : "API 探测中", tone: "text-emerald-200", dot: "bg-emerald-300" },
     { icon: BookOpenCheck, label: `知识库已同步 · ${health?.kb_docs ?? "—"} 篇`, tone: "text-cyan-200", dot: "bg-cyan-300" },
   ];
 
@@ -42,7 +42,7 @@ export default function HeroHeader({ health }) {
       <div className="pointer-events-none absolute inset-x-10 top-6 h-px bg-gradient-to-r from-transparent via-white/50 to-transparent" />
 
       {/* 状态 chips 右上 */}
-      <div className="absolute right-8 top-8 flex items-center gap-2.5">
+      <div className="absolute right-8 top-7 flex max-w-[62%] flex-wrap items-center justify-end gap-2">
         {status.map((s, i) => (
           <motion.div
             key={s.label}

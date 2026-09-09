@@ -12,32 +12,42 @@ const TOOLTIP = {
 export default function Analytics() {
   const [sum, setSum] = useState(null);
   const [logs, setLogs] = useState([]);
-  useEffect(() => { api.summary().then(setSum).catch(() => {}); api.qaLogs().then(setLogs).catch(() => {}); }, []);
+  const [all, setAll] = useState([]);
+  useEffect(() => {
+    api.summary().then(setSum).catch(() => {});
+    api.qaLogs().then(setLogs).catch(() => {});
+    // 全量工单（4 页）用于真实区域聚合
+    Promise.all([1, 2, 3, 4].map((p) => api.tickets({ page: p, page_size: 100 })))
+      .then((pages) => setAll(pages.flatMap((x) => x.items))).catch(() => {});
+  }, []);
 
   const sla = useMemo(() => {
     if (!sum) return [];
-    const yes = sum.overdue.length === 0 ? 0 : 100 - Math.min(40, sum.overdue.length * 6);
-    return [{ name: "SLA", value: Math.max(60, 100 - (sum.kpi.today_count > 0 ? sum.overdue.length * 5 : 0)), fill: "url(#slaG)" }];
+    return [{ name: "SLA", value: Math.max(60, 100 - sum.overdue.length * 5), fill: "url(#slaG)" }];
   }, [sum]);
 
+  /* 响应延迟：真实超时等待分桶 */
   const delayDist = useMemo(() => {
     if (!sum) return [];
-    const l = sum.overdue.length;
-    return [
-      { name: "≤ 1h", value: Math.max(4, Math.round(sum.kpi.today_count * 0.22)), fill: "#10b981" },
-      { name: "1-4h", value: Math.max(3, Math.round(sum.kpi.today_count * 0.16)), fill: "#f59e0b" },
-      { name: "> 4h", value: l, fill: "#ef4444" },
+    const b = [
+      { name: "< 4h", lo: 0, hi: 4, fill: "#10b981" },
+      { name: "4–12h", lo: 4, hi: 12, fill: "#f59e0b" },
+      { name: "12–48h", lo: 12, hi: 48, fill: "#f97316" },
+      { name: "> 48h", lo: 48, hi: Infinity, fill: "#ef4444" },
     ];
+    return b.map((x) => ({ ...x, value: (sum.overdue || []).filter((o) => (o.waiting_hours ?? 0) >= x.lo && (o.waiting_hours ?? 0) < x.hi).length }));
   }, [sum]);
 
+  /* 航线区域：按起运港真实归类 */
+  const REGION_OF_POL = { 上海: "华东", 宁波: "华东", 青岛: "华东", 大连: "华东", 天津: "华北", 深圳: "华南", 厦门: "华南", 广州: "华南" };
   const geo = useMemo(() => {
     const m = {};
-    (sum?.trend || []).forEach((t, i) => {
-      const zone = ["North America", "Europe", "Asia", "SEA"][i % 4];
-      m[zone] = (m[zone] || 0) + t.count;
+    all.forEach((t) => {
+      const reg = REGION_OF_POL[t.pol] || "未标注";
+      m[reg] = (m[reg] || 0) + 1;
     });
     return Object.entries(m).map(([name, value]) => ({ name, value }));
-  }, [sum]);
+  }, [all]);
 
   const agents = [
     { name: "分类", acc: 0.97, full: 100 },
@@ -90,7 +100,7 @@ export default function Analytics() {
         {/* 延迟分布 */}
         <Reveal delay={0.08} className="col-span-4">
           <Card className="h-full">
-            <CardHead title="响应延迟分布" sub="首响耗时分布（近 7 日估算）" />
+            <CardHead title="响应延迟分布" sub="超时工单等待时长分桶 · 真实聚合" />
             <div className="h-[230px]">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={delayDist} margin={{ top: 8, right: 8, left: -18, bottom: 0 }}>
@@ -108,7 +118,7 @@ export default function Analytics() {
         {/* 地区分布雷达 */}
         <Reveal delay={0.16} className="col-span-4">
           <Card className="h-full">
-            <CardHead title="航线区域分布" sub="航线区域工单量" />
+            <CardHead title="航线区域分布" sub="按起运港归类 · 真实聚合" />
             <div className="h-[230px]">
               <ResponsiveContainer width="100%" height="100%">
                 <RadarChart data={geo} outerRadius="72%">

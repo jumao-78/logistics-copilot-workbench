@@ -42,7 +42,7 @@ function etaOf(raw) { const m = String(raw || "").match(/(\d{1,2})月(\d{1,2})�
 function carrierOf(t) { return CARRIER_BY_PREFIX[(t.bill_no || "").slice(0, 4)] || "待识别"; }
 
 /* ═════════ 左栏：Ticket Inbox ═════════ */
-function InboxList({ list, sel, setSel, q, setQ, onRefresh }) {
+function InboxList({ list, sel, setSel, q, setQ, onRefresh, onLoadMore, hasMore }) {
   return (
     <div className="flex h-full flex-col">
       <div className="mb-3 flex items-center gap-2">
@@ -87,6 +87,11 @@ function InboxList({ list, sel, setSel, q, setQ, onRefresh }) {
           );
         })}
       </div>
+      {hasMore && (
+        <button onClick={onLoadMore} className="mt-3 w-full rounded-xl border border-line py-2 text-[12px] font-medium text-ink2 transition hover:border-blue-200 hover:bg-blue-50/40 hover:text-blue-700">
+          加载更多
+        </button>
+      )}
     </div>
   );
 }
@@ -210,8 +215,15 @@ function Conversation({ ticket }) {
             <span className="flex items-center gap-1 text-[10px] text-ink3">
               <span className="rounded-full bg-blue-50 px-2 py-px font-medium text-blue-600">AI 生成</span> 由 Reply Agent 生成
             </span>
-            <div className="max-w-[92%] whitespace-pre-wrap rounded-2xl rounded-tr-md bg-gradient-to-br from-blue-50 to-cyan-50/70 px-3.5 py-2.5 text-[12.5px] leading-relaxed text-ink/90 ring-1 ring-blue-100/70">
+            <div className="group relative max-w-[92%] whitespace-pre-wrap rounded-2xl rounded-tr-md bg-gradient-to-br from-blue-50 to-cyan-50/70 px-3.5 py-2.5 text-[12.5px] leading-relaxed text-ink/90 ring-1 ring-blue-100/70">
               {ticket.suggested_reply}
+              <button
+                onClick={() => navigator.clipboard?.writeText(ticket.suggested_reply)}
+                title="复制回复"
+                className="absolute -top-2 right-2 flex h-6 w-6 items-center justify-center rounded-lg border border-line bg-surface text-ink3 opacity-0 shadow-sm transition hover:text-blue-600 group-hover:opacity-100"
+              >
+                <Copy size={11} />
+              </button>
             </div>
           </div>
         )}
@@ -358,16 +370,44 @@ export default function Inbox({ health }) {
   const [detail, setDetail] = useState(null);
   const [kbDocs, setKbDocs] = useState([]);
   const [q, setQ] = useState("");
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
   const [load, setLoad] = useState(true);
+  const [creating, setCreating] = useState(false);
+  const [msg, setMsg] = useState("");
   const first = useRef(true);
 
   const reload = async () => {
     setLoad(true);
     try {
-      const d = await api.tickets({ page_size: 40, q: q || undefined });
+      const d = await api.tickets({ page: 1, page_size: 40, q: q || undefined });
       setTickets(d.items);
+      setTotal(d.total);
+      setPage(1);
       setSel((s) => (s && d.items.some((i) => i.id === s) ? s : d.items[0]?.id ?? null));
     } finally { setLoad(false); }
+  };
+  const loadMore = async () => {
+    const next = page + 1;
+    const d = await api.tickets({ page: next, page_size: 40, q: q || undefined });
+    setTickets((prev) => {
+      const seen = new Set(prev.map((i) => i.id));
+      return [...prev, ...d.items.filter((i) => !seen.has(i.id))];
+    });
+    setTotal(d.total);
+    setPage(next);
+  };
+  const createTicket = async () => {
+    const text = msg.trim();
+    if (!text || creating) return;
+    setCreating(true);
+    try {
+      const t = await api.createTicket(text);
+      setMsg("");
+      await reload();
+      setSel(t.id);
+    } catch (e) { alert("创建失败：" + e.message); }
+    setCreating(false);
   };
   useEffect(() => { const t = setTimeout(reload, 350); return () => clearTimeout(t); }, [q]);
   useEffect(() => { if (first.current) { first.current = false; reload(); } /* eslint-disable-next-line */ }, []);
@@ -382,12 +422,34 @@ export default function Inbox({ health }) {
           <p className="mt-1 text-[13.5px] text-ink2">物流状态 · AI 分析 · 知识检索 · 建议回复</p>
         </div>
         <span className="flex items-center gap-1.5 rounded-full border border-line bg-surface px-3.5 py-1.5 text-[12px] text-ink2">
-          <Dot tone="success" pulse /> {tickets.length} 条工单
+          <Dot tone="success" pulse /> {total || tickets.length} 条工单
         </span>
       </div>
 
+      {/* 快速新建：粘贴客户消息 → AI 自动处理 */}
+      <Card className="flex items-center gap-2.5 p-3.5">
+        <div className="grad flex h-8 w-8 shrink-0 items-center justify-center rounded-xl shadow-[0_6px_14px_-5px_rgba(37,99,235,.5)]"><Sparkles size={14} className="text-white" /></div>
+        <input
+          value={msg}
+          onChange={(e) => setMsg(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && createTicket()}
+          placeholder="粘贴客户消息（提单号 / 柜号 / 问题描述），AI 将自动结构化处理…"
+          className="min-w-0 flex-1 rounded-xl border border-line bg-surface2/40 px-3.5 py-2 text-[13px] placeholder:text-ink3 focus:border-blue-300 focus:bg-surface"
+        />
+        <button onClick={createTicket} disabled={creating} className="btn-grad flex shrink-0 items-center gap-1.5 rounded-xl px-4 py-2 text-[12.5px] font-semibold">
+          {creating ? <Loader2 size={13} className="animate-spin" /> : <Send size={13} />} AI 处理
+        </button>
+      </Card>
+
       <div className="grid grid-cols-12 items-start gap-5">
-        <div className="col-span-3"><Card className="p-4">{load ? <Loading /> : <InboxList list={tickets} sel={sel} setSel={setSel} q={q} setQ={setQ} onRefresh={reload} />}</Card></div>
+        <div className="col-span-3">
+          <Card className="p-4">
+            {load ? <Loading /> : (
+              <InboxList list={tickets} sel={sel} setSel={setSel} q={q} setQ={setQ} onRefresh={reload}
+                onLoadMore={loadMore} hasMore={tickets.length < total} />
+            )}
+          </Card>
+        </div>
         <div className="col-span-5 space-y-4">
           {detail ? (
             <>

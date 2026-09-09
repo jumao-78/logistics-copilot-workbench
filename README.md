@@ -106,6 +106,8 @@ pip install -r requirements.txt
 python scripts/bootstrap.py
 
 # ③ 启动服务，浏览器打开 http://127.0.0.1:8000
+
+> 💡 演示前若“今日工单量”显示 0（模拟数据停留在生成日），运行 `python scripts/mock_data.py --force` 即可把 320 条数据刷新到当天。
 python -m uvicorn app.main:app --port 8000
 ```
 

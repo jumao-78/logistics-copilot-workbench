@@ -33,24 +33,24 @@ def _num(v):
 def mock_insight(summary: dict) -> str:
     """规则模板版：依据 KPI 指标生成建议（mock 降级用，仍引用真实聚合数字）。"""
     k = summary.get("kpi", {})
-    lines = []
+    items = []
     ai_rate = k.get("ai_rate", 0)
     if ai_rate < 50:
-        lines.append(f"1. AI 自动处理率仅 {_num(ai_rate)}%：优先扩充 FAQ 知识库与分类规则，把高重复的查询/催件类接入自动应答，目标提升至 60% 以上。")
+        items.append(f"AI 自动处理率仅 {_num(ai_rate)}%：优先扩充 FAQ 知识库与分类规则，把高重复的查询/催件类接入自动应答，目标提升至 60% 以上。")
     else:
-        lines.append(f"1. AI 自动处理率已达 {_num(ai_rate)}%：继续向人工处理工单抽样复盘，把高频转人工场景沉淀为新的自动规则。")
+        items.append(f"AI 自动处理率已达 {_num(ai_rate)}%：继续向人工处理工单抽样复盘，把高频转人工场景沉淀为新的自动规则。")
 
     urgent = k.get("urgent_rate", 0)
     if urgent > 15:
-        lines.append(f"2. 高紧急工单占比 {_num(urgent)}%：对投诉/扣货/索赔类建立 30 分钟响应值班提醒，避免升级为客诉。")
+        items.append(f"高紧急工单占比 {_num(urgent)}%：对投诉/扣货/索赔类建立 30 分钟响应值班提醒，避免升级为客诉。")
 
     avg = k.get("avg_response_minutes")
     if avg is not None and avg > 240:
-        lines.append(f"2/3. 平均首响 {_num(avg / 60)} 小时偏长：为待处理超 4 小时工单增加自动催办与升级通知，压缩首响时间。")
+        items.append(f"平均首响 {_num(avg / 60)} 小时偏长：为待处理超 4 小时工单增加自动催办与升级通知，压缩首响时间。")
 
     overdue = summary.get("overdue", [])
     if overdue:
-        lines.append(f"3. 当前有 {len(overdue)} 条超时工单：建议开启超时自动升级到主管并优先分配高紧急项。")
+        items.append(f"当前有 {len(overdue)} 条超时工单：建议开启超时自动升级到主管并优先分配高紧急项。")
 
     intents = summary.get("top_intents", [])
     query_share = 0
@@ -58,11 +58,12 @@ def mock_insight(summary: dict) -> str:
         if it.get("name") == "查询":
             query_share = it.get("value", 0)
     if query_share:
-        lines.append(f"4. “查询”类工单是最主要意图（{query_share} 条）：多为流程/费用咨询，继续扩充 RAG 知识库覆盖面，可直接削减人工查询量。")
+        items.append(f"“查询”类工单是最主要意图（{query_share} 条）：多为流程/费用咨询，继续扩充 RAG 知识库覆盖面，可直接削减人工查询量。")
 
-    if len(lines) < 3:
-        lines.append(f"3. 今日工单 {k.get('today_count', 0)} 条，整体平稳：建议每周输出一次本报告并复盘改善项落地效果。")
-    return "\n".join(lines[:5])
+    if len(items) < 3:
+        items.append(f"今日工单 {k.get('today_count', 0)} 条，整体平稳：建议每周输出一次本报告并复盘改善项落地效果。")
+    # 统一编号（修复原固定前缀导致的 “2/3.” 编号错乱）
+    return "\n".join(f"{i}. {t}" for i, t in enumerate(items[:5], 1))
 
 
 def generate_insight(db: Session) -> dict:
