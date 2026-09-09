@@ -79,7 +79,7 @@ export default function HeroHeader({ health }) {
 
       {/* 航线轨道核心 —— 右下角固定，避开所有文字区 */}
       <motion.div
-        className="pointer-events-none absolute right-[6%] top-[42%]"
+        className="pointer-events-none absolute right-[6%] top-[34%]"
         initial={{ opacity: 0, scale: 0.85 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.45, duration: 0.9, ease: "easeOut" }}
