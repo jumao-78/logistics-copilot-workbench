@@ -77,18 +77,18 @@ export default function HeroHeader({ health }) {
         Logistics Copilot
       </div>
 
-      {/* 航线轨道核心 —— 同心轨道 + 公转光点 + 中心发光核心 */}
+      {/* 航线轨道核心 —— 右下角固定，避开所有文字区 */}
       <motion.div
-        className="pointer-events-none absolute right-[8%] top-[57%] -translate-y-1/2"
+        className="pointer-events-none absolute bottom-8 right-[6%]"
         initial={{ opacity: 0, scale: 0.85 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.45, duration: 0.9, ease: "easeOut" }}
       >
-        <div className="orb-float relative h-[196px] w-[196px]">
+        <div className="orb-float relative h-[168px] w-[168px]">
           {/* 环境光晕 */}
           <div
-            className="absolute -inset-8 rounded-full"
-            style={{ background: "radial-gradient(circle, rgba(56,189,248,.30), rgba(56,189,248,0) 68%)" }}
+            className="absolute -inset-6 rounded-full"
+            style={{ background: "radial-gradient(circle, rgba(56,189,248,.26), rgba(56,189,248,0) 68%)" }}
           />
           {/* 轨道 1（外） */}
           <div className="absolute inset-0 rounded-full border border-white/14" />
