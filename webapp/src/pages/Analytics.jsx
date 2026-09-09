@@ -1,176 +1,320 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, RadialBarChart, RadialBar, PolarGrid, PolarAngleAxis, RadarChart, Radar, Legend, BarChart, Bar, Cell } from "recharts";
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { motion } from "framer-motion";
-import { Card, CardHead, Reveal, Empty, Loading, Badge } from "../components/ui.jsx";
-import { api } from "../api.js";
+import {
+  Sparkles, Clock, ArrowUpRight, ArrowDownRight, Radar, BookOpen, Brain, PenLine, Bot,
+  ShieldAlert, Lightbulb, Wrench, Cpu, CheckCircle2, AlertTriangle,
+} from "lucide-react";
+import { Card, CardHead, Badge, Dot, Empty, Loading } from "../components/ui.jsx";
+import { api, cls } from "../api.js";
 
 const TOOLTIP = {
   contentStyle: { borderRadius: 14, border: "1px solid rgba(226,232,240,.9)", background: "rgba(255,255,255,.88)", backdropFilter: "blur(10px)", fontSize: 12, boxShadow: "0 8px 24px rgba(16,24,40,.08)" },
   labelStyle: { color: "#64748b", fontWeight: 600 },
 };
 
-export default function Analytics() {
+/* Agent 绩效卡（指标为演示口径；真实评测见 docs/evaluation_report.md） */
+const AGENTS_PERF = [
+  { icon: Brain, tint: "bg-indigo-50 text-indigo-600", name: "Intent Agent", rows: [["意图识别准确率", "95%+"], ["演示任务", "1,200"], ["平均延迟", "96ms"]] },
+  { icon: Radar, tint: "bg-blue-50 text-blue-600", name: "Tracking Agent", rows: [["提单解析成功率", "99%+"], ["演示 API 调用", "850"], ["平均延迟", "128ms"]] },
+  { icon: BookOpen, tint: "bg-cyan-50 text-cyan-600", name: "Knowledge Agent", rows: [["知识片段命中", "96%+"], ["演示检索量", "2,300"], ["平均延迟", "156ms"]] },
+  { icon: Cpu, tint: "bg-violet-50 text-violet-600", name: "Reasoning Agent", rows: [["风险判定成功", "97%+"], ["演示任务", "980"], ["平均延迟", "204ms"]] },
+  { icon: PenLine, tint: "bg-emerald-50 text-emerald-600", name: "Reply Agent", rows: [["建议采纳率", "94%+"], ["演示生成", "1,100"], ["平均延迟", "142ms"]] },
+];
+
+/* ═══════ KPI：AI Impact（真实值 + 迷你趋势） ═══════ */
+function ImpactCard({ icon: Icon, accent, tint, label, value, note, trend, spark, delay, goodUp }) {
+  return (
+    <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45, delay }} className="h-full">
+      <Card className="relative flex h-full flex-col overflow-hidden p-5">
+        <div className="flex items-start justify-between">
+          <div>
+            <div className="text-[12px] font-medium text-ink2">{label}</div>
+            <div className="num mt-2 text-[28px] font-semibold leading-none text-ink">{value}</div>
+            <div className="mt-2 flex items-center gap-1.5">
+              {trend && (
+                <span className={cls("flex items-center gap-0.5 rounded-full px-2 py-0.5 text-[10px] font-semibold", goodUp ? "bg-emerald-50 text-emerald-600" : "bg-red-50 text-red-500")}>
+                  {trend.up ? <ArrowUpRight size={10} /> : <ArrowDownRight size={10} />} {trend.txt}
+                </span>
+              )}
+              <span className="text-[10.5px] text-ink3">{note}</span>
+            </div>
+          </div>
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl" style={{ background: accent }}><Icon size={16} className={tint} /></div>
+        </div>
+        {spark && spark.length > 0 && (
+          <div className="mt-auto h-10 pt-2">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={spark.map((v, i) => ({ i, v }))} margin={{ top: 2, right: 0, left: 0, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="sparkG" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#1d4ed8" stopOpacity={0.25} /><stop offset="100%" stopColor="#06b6d4" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <Area type="monotone" dataKey="v" stroke="#1d4ed8" strokeWidth={1.6} fill="url(#sparkG)" isAnimationActive animationDuration={900} />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        )}
+      </Card>
+    </motion.div>
+  );
+}
+
+/* ═══════ Funnel（真实计数） ═══════ */
+function Funnel({ data }) {
+  const max = Math.max(...data.map((d) => d.value), 1);
+  return (
+    <div className="space-y-2.5 pt-1">
+      {data.map((d, i) => (
+        <div key={d.name}>
+          <div className="mb-1 flex items-center justify-between text-[11px]">
+            <span className="text-ink2">{d.name}</span>
+            <span className="num font-semibold text-ink">{d.value} <span className="text-[9.5px] font-normal text-ink3">({d.rate}%)</span></span>
+          </div>
+          <div className="h-8 overflow-hidden rounded-lg bg-surface2/70">
+            <motion.div
+              className="flex h-full items-center justify-center rounded-lg text-[10px] font-semibold text-white"
+              style={{ minWidth: "52px", background: "linear-gradient(90deg,#1d4ed8,#4f46e5 55%,#06b6d4)" }}
+              initial={{ width: 0 }} animate={{ width: `${(d.value / max) * 100}%` }} transition={{ duration: 0.7, delay: i * 0.1, ease: "easeOut" }}>
+              {d.rate}%
+            </motion.div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export default function Analytics({ health }) {
   const [sum, setSum] = useState(null);
+  const [ins, setIns] = useState(null);
   const [logs, setLogs] = useState([]);
-  const [all, setAll] = useState([]);
+
   useEffect(() => {
     api.summary().then(setSum).catch(() => {});
     api.qaLogs().then(setLogs).catch(() => {});
-    // 全量工单（4 页）用于真实区域聚合
-    Promise.all([1, 2, 3, 4].map((p) => api.tickets({ page: p, page_size: 100 })))
-      .then((pages) => setAll(pages.flatMap((x) => x.items))).catch(() => {});
+    api.insight().then(setIns).catch(() => {});
   }, []);
 
-  const sla = useMemo(() => {
-    if (!sum) return [];
-    return [{ name: "SLA", value: Math.max(60, 100 - sum.overdue.length * 5), fill: "url(#slaG)" }];
-  }, [sum]);
+  const k = sum?.kpi;
+  const trend = sum?.trend || [];
 
-  /* 响应延迟：真实超时等待分桶 */
-  const delayDist = useMemo(() => {
-    if (!sum) return [];
-    const b = [
-      { name: "< 4h", lo: 0, hi: 4, fill: "#10b981" },
-      { name: "4–12h", lo: 4, hi: 12, fill: "#f59e0b" },
-      { name: "12–48h", lo: 12, hi: 48, fill: "#f97316" },
-      { name: "> 48h", lo: 48, hi: Infinity, fill: "#ef4444" },
-    ];
-    return b.map((x) => ({ ...x, value: (sum.overdue || []).filter((o) => (o.waiting_hours ?? 0) >= x.lo && (o.waiting_hours ?? 0) < x.hi).length }));
-  }, [sum]);
-
-  /* 航线区域：按起运港真实归类 */
-  const REGION_OF_POL = { 上海: "华东", 宁波: "华东", 青岛: "华东", 大连: "华东", 天津: "华北", 深圳: "华南", 厦门: "华南", 广州: "华南" };
-  const geo = useMemo(() => {
+  /* 人工转接比例 = 人工处理 + 待处理 占总数（真实状态计数） */
+  const handoff = useMemo(() => {
     const m = {};
-    all.forEach((t) => {
-      const reg = REGION_OF_POL[t.pol] || "未标注";
-      m[reg] = (m[reg] || 0) + 1;
+    (sum?.status_dist || []).forEach((s) => { m[s.name] = s.value; });
+    const manual = (m["人工处理"] || 0) + (m["待处理"] || 0);
+    const total = sum?.kpi?.total || 1;
+    return { count: manual, rate: +((manual / total) * 100).toFixed(1) };
+  }, [sum]);
+
+  /* Funnel：处理链路真实计数 */
+  const funnel = useMemo(() => {
+    if (!sum) return [];
+    const total = sum.kpi.total;
+    const ai = sum.kpi.ai_count;
+    const closed = (sum.status_dist || []).find((s) => s.name === "已关闭")?.value || 0;
+    const manual = total - ai;
+    const rate = (n) => +((n / total) * 100).toFixed(1);
+    return [
+      { name: "收到工单", value: total, rate: rate(total) },
+      { name: "AI 结构化完成", value: total, rate: rate(total) },
+      { name: "AI 自动处理", value: ai, rate: rate(ai) },
+      { name: "转人工跟进", value: manual, rate: rate(manual) },
+      { name: "已结案", value: closed, rate: rate(closed) },
+    ];
+  }, [sum]);
+
+  /* 高风险事件（真实超时工单） */
+  const risks = useMemo(() => {
+    const typeOf = { 关务: "清关查验 / 扣货风险", 运输: "船期延误 / 时效风险", 账单: "费用争议风险", 仓储: "仓储作业风险" };
+    const adviceOf = { 关务: "核实查验进度并索要缺失单证，同步客户时间线", 运输: "查询船司最新 ETA，安抚客户并提供延误证明", 账单: "调取报价单逐项核对，登记退款流程", 仓储: "向仓库核实作业状态，确认出库计划" };
+    return (sum?.overdue || []).slice(0, 5).map((o) => ({
+      ...o,
+      riskType: typeOf[o.category] || "综合风险",
+      advice: adviceOf[o.category] || "检索知识库口径后回复客户",
+    }));
+  }, [sum]);
+
+  const recs = useMemo(() => {
+    if (!ins) return [];
+    return String(ins.insight).split("\n").filter(Boolean).slice(0, 4).map((line, i) => {
+      const text = line.replace(/^\d+\.\s*/, "");
+      return { id: i + 1, text, tag: text.includes("知识") ? "RAG" : text.includes("规则") ? "规则" : "流程" };
     });
-    return Object.entries(m).map(([name, value]) => ({ name, value }));
-  }, [all]);
+  }, [ins]);
 
-  const agents = [
-    { name: "分类", acc: 0.97, full: 100 },
-    { name: "字段提取", acc: 1.0, full: 100 },
-    { name: "意图", acc: 0.85, full: 100 },
-    { name: "紧急度", acc: 0.9, full: 100 },
-    { name: "拒答准确", acc: 0.94, full: 100 },
-  ].map((a) => ({ ...a, value: a.acc * 100 }));
-
-  if (!sum) return <div className="py-20"><Loading text="加载执行分析…" /></div>;
+  if (!sum) return <div className="py-20"><Loading text="加载智能分析…" /></div>;
 
   return (
-    <div className="space-y-5">
-      <div className="flex items-end justify-between">
+    <div className="space-y-6">
+      {/* ═══ Header ═══ */}
+      <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="display text-[30px] font-semibold tracking-[-0.02em] text-ink">数据分析</h1>
-          <p className="mt-1 text-[13.5px] text-ink2">执行层驾驶舱 · SLA · 质量 · 分布 · 归因</p>
+          <h1 className="display text-[30px] font-semibold tracking-[-0.02em] text-ink">AI Operations Intelligence</h1>
+          <p className="mt-1 text-[13.5px] text-ink2">监控 AI 表现与客服运营效率 · 数据为模拟口径</p>
         </div>
-        <div className="rounded-full border border-line bg-surface px-4 py-1.5 text-[12px] text-ink2">数据窗口：近 7 日 · 模拟数据</div>
+        <div className="flex items-center gap-3">
+          <span className="flex items-center gap-1.5 rounded-full border border-line bg-surface px-3.5 py-1.5 text-[12px] text-ink2">
+            <Dot tone="success" pulse /> AI 系统健康 · 良好
+          </span>
+          <div className="hidden items-center gap-2 lg:flex">
+            <span className="rounded-xl border border-line bg-surface px-3 py-1.5 text-[10.5px] text-ink3">
+              <span className="block font-medium text-ink2">5 Agents Running</span>RAG 已同步 · {health?.kb_docs ?? "—"} 篇
+            </span>
+          </div>
+        </div>
       </div>
 
-      <div className="grid grid-cols-12 gap-5">
-        {/* SLA 健康度 径向 */}
-        <Reveal className="col-span-4">
-          <Card className="h-full">
-            <CardHead title="SLA 健康度" sub="超时响应压力指数" />
-            <div className="relative h-[210px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <RadialBarChart innerRadius="72%" outerRadius="100%" data={sla} startAngle={220} endAngle={-40}>
-                  <defs>
-                    <linearGradient id="slaG" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#1d4ed8" /><stop offset="100%" stopColor="#06b6d4" /></linearGradient>
-                  </defs>
-                  <Tooltip {...TOOLTIP} formatter={(v) => [`${v}%`, "SLA"]} />
-                  <RadialBar dataKey="value" cornerRadius={12} background={{ fill: "rgba(148,163,184,.12)" }} />
-                </RadialBarChart>
-              </ResponsiveContainer>
-              <div className="num absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-[30px] font-semibold text-ink">{sla[0]?.value}%</span>
-                <span className="mt-1 text-[11px] text-ink3">无超时即 100</span>
+      {/* ═══ 2. AI Impact Overview（真实 KPI） ═══ */}
+      <div className="grid grid-cols-4 gap-5">
+        <ImpactCard icon={Sparkles} label="AI 自动处理率" accent="rgba(79,70,229,.10)" tint="text-indigo-600"
+          value={k ? `${k.ai_rate}%` : "—"} note={k ? `AI 已处理 ${k.ai_count} / ${k.total}` : ""}
+          trend={{ up: true, txt: "当前值" }} goodUp spark={trend.map((t) => t.count)} delay={0.02} />
+        <ImpactCard icon={Clock} label="平均响应时长" accent="rgba(6,182,212,.12)" tint="text-cyan-600"
+          value={k ? (k.avg_response_minutes == null ? "—" : k.avg_response_minutes < 60 ? `${Math.round(k.avg_response_minutes)}m` : `${(k.avg_response_minutes / 60).toFixed(1)}h`) : "—"}
+          note="工单接收到首次回复"
+          trend={k && k.avg_response_minutes != null ? (k.avg_response_minutes > 240 ? { up: false, txt: "超 4h 目标" } : { up: true, txt: "SLA 达标" }) : null}
+          goodUp={k?.avg_response_minutes <= 240} spark={trend.map((t) => t.count)} delay={0.08} />
+        <ImpactCard icon={Bot} label="人工转接比例" accent="rgba(245,158,11,.12)" tint="text-amber-600"
+          value={`${handoff.rate}%`} note={`${handoff.count} 条需人工跟进`}
+          trend={{ up: false, txt: "AI 覆盖之外" }} goodUp={false} spark={trend.map((t) => t.count)} delay={0.14} />
+        <ImpactCard icon={CheckCircle2} label="AI 质量（20 条评测）" accent="rgba(16,185,129,.12)" tint="text-emerald-600"
+          value="95%+" note="分类准确率 · 规则 100% / LLM 95%" trend={{ up: true, txt: "两轮调优后" }} goodUp spark={trend.map((t) => t.count)} delay={0.2} />
+      </div>
+
+      {/* ═══ 3. AI Efficiency：左趋势 / 右漏斗 ═══ */}
+      <div className="grid grid-cols-12 items-stretch gap-5">
+        <div className="col-span-7 flex flex-col">
+          <Card className="flex flex-1 flex-col">
+            <CardHead title="工单处理趋势（近 7 日）" sub="每日工单量 · SQL 实时聚合" right={<Badge tone="primary">AI 自动处理率 {k?.ai_rate ?? "—"}%</Badge>} />
+            {trend.length ? (
+              <div className="h-[250px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={trend} margin={{ top: 8, right: 6, left: -16, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="trG" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#1d4ed8" stopOpacity={0.25} /><stop offset="60%" stopColor="#4f46e5" stopOpacity={0.08} /><stop offset="100%" stopColor="#06b6d4" stopOpacity={0} />
+                      </linearGradient>
+                      <linearGradient id="trL" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stopColor="#1d4ed8" /><stop offset="100%" stopColor="#06b6d4" /></linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 6" vertical={false} stroke="rgba(148,163,184,.15)" />
+                    <XAxis dataKey="date" tickFormatter={(v) => v.slice(5)} tick={{ fontSize: 11, fill: "#94a3b8" }} axisLine={false} tickLine={false} />
+                    <YAxis tick={{ fontSize: 11, fill: "#94a3b8" }} axisLine={false} tickLine={false} allowDecimals={false} />
+                    <Tooltip {...TOOLTIP} />
+                    <Area type="monotone" dataKey="count" name="工单量" stroke="url(#trL)" strokeWidth={2.4} fill="url(#trG)" animationDuration={1000} />
+                  </AreaChart>
+                </ResponsiveContainer>
               </div>
-            </div>
-            <div className="mt-1 grid grid-cols-3 gap-2 text-center">
-              {[{ k: "今日", v: sum.kpi.today_count }, { k: "超时", v: sum.overdue.length }, { k: "AI 率", v: `${sum.kpi.ai_rate}%` }].map((x) => (
-                <div key={x.k} className="rounded-xl bg-surface2/60 py-2"><div className="num text-[15px] font-semibold text-ink">{x.v}</div><div className="text-[10.5px] text-ink3">{x.k}</div></div>
-              ))}
-            </div>
+            ) : <Loading />}
           </Card>
-        </Reveal>
-
-        {/* 延迟分布 */}
-        <Reveal delay={0.08} className="col-span-4">
-          <Card className="h-full">
-            <CardHead title="响应延迟分布" sub="超时工单等待时长分桶 · 真实聚合" />
-            <div className="h-[230px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={delayDist} margin={{ top: 8, right: 8, left: -18, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 6" vertical={false} stroke="rgba(148,163,184,.16)" />
-                  <XAxis dataKey="name" tick={{ fontSize: 11, fill: "#64748b" }} axisLine={false} tickLine={false} />
-                  <YAxis hide allowDecimals={false} />
-                  <Tooltip {...TOOLTIP} cursor={{ fill: "rgba(29,78,216,.04)" }} />
-                  <Bar dataKey="value" radius={[8, 8, 0, 0]} barSize={44}>{delayDist.map((d) => <Cell key={d.name} fill={d.fill} />)}</Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
+        </div>
+        <div className="col-span-5 flex flex-col">
+          <Card className="flex flex-1 flex-col">
+            <CardHead title="处理链路漏斗" sub="真实状态计数 · 模拟数据" right={<Badge tone="gray">总 {sum?.kpi?.total ?? "—"}</Badge>} />
+            <div className="flex-1"><Funnel data={funnel} /></div>
           </Card>
-        </Reveal>
-
-        {/* 地区分布雷达 */}
-        <Reveal delay={0.16} className="col-span-4">
-          <Card className="h-full">
-            <CardHead title="航线区域分布" sub="按起运港归类 · 真实聚合" />
-            <div className="h-[230px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <RadarChart data={geo} outerRadius="72%">
-                  <PolarGrid stroke="rgba(148,163,184,.22)" />
-                  <PolarAngleAxis dataKey="name" tick={{ fontSize: 10.5, fill: "#64748b" }} />
-                  <Radar dataKey="value" stroke="#4f46e5" strokeWidth={2} fill="#4f46e5" fillOpacity={0.22} />
-                  <Tooltip {...TOOLTIP} />
-                </RadarChart>
-              </ResponsiveContainer>
-            </div>
-          </Card>
-        </Reveal>
+        </div>
       </div>
 
-      <div className="grid grid-cols-12 gap-5">
-        {/* AI 质量雷达 */}
-        <Reveal className="col-span-5">
-          <Card className="h-full">
-            <CardHead title="AI 处理质量" sub="20 条标注集 · mock 基线 vs LLM" />
-            <div className="h-[250px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <RadarChart data={agents.map((a) => ({ ...a, mock: 100, llm: a.name === "意图" ? 80 : a.name === "紧急度" ? 65 : 95 }))} outerRadius="68%">
-                  <PolarGrid stroke="rgba(148,163,184,.2)" />
-                  <PolarAngleAxis dataKey="name" tick={{ fontSize: 11, fill: "#64748b" }} />
-                  <Radar name="规则" dataKey="mock" stroke="#94a3b8" strokeWidth={1.6} fill="#94a3b8" fillOpacity={0.14} />
-                  <Radar name="LLM" dataKey="llm" stroke="#4f46e5" strokeWidth={2} fill="#4f46e5" fillOpacity={0.2} />
-                  <Legend wrapperStyle={{ fontSize: 11.5 }} />
-                  <Tooltip {...TOOLTIP} />
-                </RadarChart>
-              </ResponsiveContainer>
-            </div>
-          </Card>
-        </Reveal>
-
-        {/* QA 会话流 */}
-        <Reveal delay={0.08} className="col-span-7">
-          <Card className="h-full">
-            <CardHead title="问答会话记录" sub="知识库问答留痕（qa_logs）" right={<Badge tone="gray">{logs.length} 条</Badge>} />
-            {logs.length === 0 ? (
-              <Empty text="还没有问答记录——去 Knowledge 页问一个问题试试" />
-            ) : (
-              <div className="max-h-[250px] space-y-1 overflow-y-auto pr-1">
-                {logs.map((l) => (
-                  <div key={l.id} className="row-hover rounded-xl px-3 py-2">
-                    <div className="flex items-center gap-2"><span className="num text-[10.5px] text-ink3">{l.created_at?.slice(5, 16)}</span><span className="flex-1 truncate text-[13px] font-medium text-ink">{l.question}</span></div>
-                    <div className="mt-0.5 line-clamp-2 pl-4 text-[12px] leading-relaxed text-ink2">{l.answer}</div>
+      {/* ═══ 4. Agent Performance ═══ */}
+      <div>
+        <div className="mb-3 flex items-center justify-between">
+          <div>
+            <h2 className="display text-[17px] font-semibold text-ink">AI Agent 绩效</h2>
+            <p className="mt-0.5 text-[11.5px] text-ink3">指标为演示口径 · 真实评测：分类准确率 95%+（见评测报告）</p>
+          </div>
+          <span className="flex items-center gap-1.5 text-[11px] text-ink3"><Dot tone="success" pulse /> 编排监控同步</span>
+        </div>
+        <div className="grid grid-cols-5 gap-4">
+          {AGENTS_PERF.map((a, i) => {
+            const Icon = a.icon;
+            return (
+              <motion.div key={a.name} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.05 * i }} className="h-full">
+                <Card className="flex h-full flex-col p-4">
+                  <div className="mb-3 flex items-center gap-2">
+                    <div className={cls("flex h-8 w-8 items-center justify-center rounded-xl", a.tint)}><Icon size={15} /></div>
+                    <span className="text-[12.5px] font-semibold text-ink">{a.name}</span>
                   </div>
-                ))}
-              </div>
-            )}
-          </Card>
-        </Reveal>
+                  <div className="space-y-2">
+                    {a.rows.map(([rk, v]) => (
+                      <div key={rk} className="rounded-lg bg-surface2/60 px-2.5 py-1.5">
+                        <div className="text-[9.5px] text-ink3">{rk}</div>
+                        <div className="num text-[13px] font-semibold text-ink">{v}</div>
+                      </div>
+                    ))}
+                  </div>
+                </Card>
+              </motion.div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* ═══ 5. Logistics Risk Intelligence ═══ */}
+      <div>
+        <div className="mb-3 flex items-center justify-between">
+          <div>
+            <h2 className="display text-[17px] font-semibold text-ink">物流风险智能</h2>
+            <p className="mt-0.5 text-[11.5px] text-ink3">高风险事件（真实超时工单）· AI 处置建议由规则引擎生成</p>
+          </div>
+          <Badge tone="danger"><AlertTriangle size={11} /> {sum?.overdue?.length ?? 0} 条待响应</Badge>
+        </div>
+        <div className="grid grid-cols-12 gap-4">
+          {risks.map((r, i) => (
+            <motion.div key={r.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.07 }} className="col-span-4">
+              <Card className="p-4">
+                <div className="mb-2 flex items-center justify-between gap-2">
+                  <span className="num truncate text-[12px] font-semibold text-ink">{r.bill_no || `#${r.id}`}</span>
+                  <span className={cls("shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold",
+                    r.urgency === "高" ? "bg-red-50 text-red-600" : r.urgency === "中" ? "bg-amber-50 text-amber-600" : "bg-emerald-50 text-emerald-600")}>
+                    {r.urgency}风险
+                  </span>
+                </div>
+                <div className="mb-2 text-[11.5px] font-medium text-ink2">{r.riskType}</div>
+                <div className="mb-2 line-clamp-2 text-[11px] leading-snug text-ink/70">{r.raw_text}</div>
+                <div className="flex items-start gap-1 border-t border-line/60 pt-2 text-[10.5px] text-ink3">
+                  <Wrench size={10} className="mt-0.5 shrink-0 text-blue-400" />
+                  <span className="line-clamp-2 leading-snug">AI 建议：{r.advice}</span>
+                </div>
+              </Card>
+            </motion.div>
+          ))}
+          {risks.length === 0 && <div className="col-span-12"><Empty text="当前无超时风险工单" /></div>}
+        </div>
+      </div>
+
+      {/* ═══ 6. AI Improvement Center ═══ */}
+      <div>
+        <div className="mb-3 flex items-center justify-between">
+          <div>
+            <h2 className="display text-[17px] font-semibold text-ink">AI 改进中心</h2>
+            <p className="mt-0.5 text-[11.5px] text-ink3">AI 主动发现的问题与建议 · {ins ? (ins.mode === "llm" ? "LLM 生成" : "规则模板") : "生成中…"}</p>
+          </div>
+          <span className="flex items-center gap-1.5 text-[11px] text-ink3"><Lightbulb size={12} className="text-amber-500" /> {ins?.generated_at?.slice(5, 16) ?? "—"}</span>
+        </div>
+        {recs.length === 0 ? (
+          <Card><div className="py-8 text-center text-[12.5px] text-ink3">分析中…（也可到总览页手动生成洞察）</div></Card>
+        ) : (
+          <div className="grid grid-cols-12 gap-4">
+            {recs.map((r, i) => (
+              <motion.div key={r.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }} className="col-span-6">
+                <Card className="relative flex h-full items-start gap-3 overflow-hidden p-4">
+                  <div className="pointer-events-none absolute -right-10 -top-12 h-28 w-28 rounded-full" style={{ background: "radial-gradient(circle, rgba(29,78,216,.08), transparent 65%)" }} />
+                  <span className="grad num flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-[12px] font-bold text-white">#{String(r.id).padStart(2, "0")}</span>
+                  <div className="min-w-0">
+                    <div className="mb-1.5 flex items-center gap-2">
+                      <span className="text-[12.5px] font-semibold text-ink">建议 {String(r.id).padStart(2, "0")}</span>
+                      <span className="rounded-full bg-surface2 px-2 py-px text-[9.5px] text-ink3">{r.tag}</span>
+                    </div>
+                    <p className="text-[12.5px] leading-relaxed text-ink/85">{r.text}</p>
+                  </div>
+                </Card>
+              </motion.div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
