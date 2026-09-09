@@ -16,3 +16,4 @@ data/*.db-journal
 Thumbs.db
 demo.mp4
 .rivet/
+webapp/node_modules/

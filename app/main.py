@@ -57,11 +57,18 @@ async def api_auth(request: Request, call_next):
             return JSONResponse(status_code=401, content={"detail": "无效或缺失 API Token（Bearer 或 X-API-Key）"})
     return await call_next(request)
 
+# V1 旧界面保留在 /web（兼容回退），V2 React 界面为默认首页
+WEBAPP_DIST = BASE_DIR / "webapp" / "dist"
 app.mount("/web", StaticFiles(directory=WEB_DIR), name="web")
+if (WEBAPP_DIST / "index.html").exists():
+    app.mount("/assets", StaticFiles(directory=WEBAPP_DIST / "assets"), name="assets")
 
 
 @app.get("/", include_in_schema=False)
 def index():
+    v2 = WEBAPP_DIST / "index.html"
+    if v2.exists():
+        return FileResponse(v2)
     return FileResponse(WEB_DIR / "index.html")
 
 

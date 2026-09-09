@@ -1,0 +1,144 @@
+@import "tailwindcss";
+
+/* ─────────── V2 Design Tokens（Vectrus Energy Edition）─────────── */
+@theme {
+  --color-canvas: #f8fafc;
+  --color-surface: #ffffff;
+  --color-surface2: #f1f5f9;
+  --color-ink: #0f172a;
+  --color-ink2: #64748b;
+  --color-ink3: #94a3b8;
+  --color-line: rgba(226, 232, 240, 0.8);
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-danger: #ef4444;
+  --color-grad1: #1d4ed8;
+  --color-grad2: #4f46e5;
+  --color-grad3: #06b6d4;
+
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Space Grotesk", "Inter", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+
+  --shadow-soft: 0 1px 2px rgba(16, 24, 40, 0.04), 0 8px 24px rgba(16, 24, 40, 0.06);
+  --shadow-lift: 0 2px 4px rgba(16, 24, 40, 0.05), 0 20px 44px rgba(30, 64, 175, 0.14);
+}
+
+html,
+body {
+  margin: 0;
+  background: var(--color-canvas);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* 背景三层：白 canvas → 2% 网格 → 角落蓝青光晕（illuminated, not colorful） */
+.bg-workspace {
+  background-color: #f8fafc;
+  background-image:
+    radial-gradient(1200px 800px at -8% -12%, rgba(29, 78, 216, 0.10), transparent 60%),
+    radial-gradient(1000px 700px at 108% 4%, rgba(6, 182, 212, 0.09), transparent 55%),
+    radial-gradient(900px 700px at 50% 120%, rgba(79, 70, 229, 0.06), transparent 60%),
+    linear-gradient(rgba(15, 23, 42, 0.022) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(15, 23, 42, 0.022) 1px, transparent 1px);
+  background-size: auto, auto, auto, 28px 28px, 28px 28px;
+  background-attachment: fixed;
+}
+
+/* ─────────── Premium Cards ─────────── */
+.card-premium {
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  outline: 1px solid var(--color-line);
+  border-radius: 28px;
+  box-shadow: var(--shadow-soft);
+  transition: box-shadow 0.35s ease, transform 0.35s ease, outline-color 0.35s ease;
+}
+.card-premium:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lift);
+  outline-color: rgba(29, 78, 216, 0.35);
+}
+
+/* 玻璃质感：仅用于 Hero 与 AI Copilot */
+.glass {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.10), rgba(255, 255, 255, 0.04));
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+/* 主渐变（按钮 / 激活指示 / 强调） */
+.grad {
+  background-image: linear-gradient(135deg, #1d4ed8 0%, #4f46e5 52%, #06b6d4 100%);
+}
+.grad-text {
+  background-image: linear-gradient(120deg, #1d4ed8, #4f46e5 55%, #06b6d4);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.btn-grad {
+  background-image: linear-gradient(135deg, #1d4ed8 0%, #4f46e5 52%, #06b6d4 100%);
+  background-size: 160% 160%;
+  color: #fff;
+  transition: background-position 0.4s ease, box-shadow 0.3s ease, transform 0.2s ease;
+  box-shadow: 0 6px 18px -6px rgba(37, 99, 235, 0.55);
+}
+.btn-grad:hover {
+  background-position: 90% 50%;
+  box-shadow: 0 10px 26px -6px rgba(37, 99, 235, 0.65);
+  transform: translateY(-1px);
+}
+
+/* 呼吸的 AI 指示 */
+@keyframes pulse-soft {
+  0%, 100% { opacity: 0.45; }
+  50% { opacity: 1; }
+}
+.ai-pulse { animation: pulse-soft 2.2s ease-in-out infinite; }
+
+/* AI Orb 悬浮 */
+@keyframes orb-float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-12px); }
+}
+.orb-float { animation: orb-float 7s ease-in-out infinite; }
+
+/* 滚动条 */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-thumb { background: rgba(100, 116, 139, 0.28); border-radius: 99px; }
+::-webkit-scrollbar-track { background: transparent; }
+
+/* 数字字体辅助 */
+.num { font-family: var(--font-mono); font-feature-settings: "tnum"; letter-spacing: -0.02em; }
+.display { font-family: var(--font-display); }
+
+/* Frosted tooltip（图表） */
+.frost {
+  background: rgba(255, 255, 255, 0.86);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  border-radius: 14px;
+  box-shadow: var(--shadow-soft);
+}
+
+/* 侧栏渐变药丸 */
+.side-active {
+  background-image: linear-gradient(120deg, rgba(29, 78, 216, 0.10), rgba(6, 182, 212, 0.06));
+  outline: 1px solid rgba(29, 78, 216, 0.22);
+}
+.side-item { transition: background 0.22s ease, outline-color 0.22s ease, color 0.22s ease; }
+.side-item:hover { background: rgba(241, 245, 249, 0.9); color: var(--color-ink); }
+
+/* 行 hover 蓝晕 */
+.row-hover { transition: background 0.18s ease; }
+.row-hover:hover { background: rgba(29, 78, 216, 0.045); }
+
+/* 焦点环 */
+input, textarea, select, button { outline: none; }
+input:focus-visible, textarea:focus-visible {
+  outline: 2px solid rgba(29, 78, 216, 0.55);
+  outline-offset: 1px;
+}
