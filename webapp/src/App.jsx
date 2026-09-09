@@ -34,17 +34,14 @@ export default function App() {
 
       {/* 主区 */}
       <main className="ml-[288px] mr-8 pb-16 pt-6">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={page}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -6 }}
-            transition={{ duration: 0.3, ease: "easeOut" }}
-          >
-            <PageComp health={health} />
-          </motion.div>
-        </AnimatePresence>
+        <motion.div
+          key={page}
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.28, ease: "easeOut" }}
+        >
+          <PageComp health={health} />
+        </motion.div>
       </main>
     </div>
   );

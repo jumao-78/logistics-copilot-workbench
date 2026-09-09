@@ -48,7 +48,7 @@ export default function AgentFlow({ health }) {
     <div className="space-y-5">
       <div className="flex items-end justify-between">
         <div>
-          <h1 className="display text-[30px] font-semibold tracking-[-0.02em] text-ink">Agent Flow</h1>
+          <h1 className="display text-[30px] font-semibold tracking-[-0.02em] text-ink">智能管道</h1>
           <p className="mt-1 text-[13.5px] text-ink2">规划 → 工具 → 反思 → 输出 · 可视化编排与执行观测</p>
         </div>
         <button onClick={runPipeline} disabled={running} className="btn-grad flex items-center gap-2 rounded-xl px-5 py-2.5 text-[13px] font-semibold">

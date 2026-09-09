@@ -63,7 +63,7 @@ export default function Analytics() {
     <div className="space-y-5">
       <div className="flex items-end justify-between">
         <div>
-          <h1 className="display text-[30px] font-semibold tracking-[-0.02em] text-ink">Analytics</h1>
+          <h1 className="display text-[30px] font-semibold tracking-[-0.02em] text-ink">数据分析</h1>
           <p className="mt-1 text-[13.5px] text-ink2">执行层驾驶舱 · SLA · 质量 · 分布 · 归因</p>
         </div>
         <div className="rounded-full border border-line bg-surface px-4 py-1.5 text-[12px] text-ink2">数据窗口：近 7 日 · 模拟数据</div>

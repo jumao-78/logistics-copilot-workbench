@@ -31,7 +31,7 @@ export default function Settings({ health }) {
     <div className="space-y-5">
       <div className="flex items-end justify-between">
         <div>
-          <h1 className="display text-[30px] font-semibold tracking-[-0.02em] text-ink">Settings</h1>
+          <h1 className="display text-[30px] font-semibold tracking-[-0.02em] text-ink">设置</h1>
           <p className="mt-1 text-[13.5px] text-ink2">工作区配置与运行状态</p>
         </div>
       </div>
