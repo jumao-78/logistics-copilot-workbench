@@ -10,13 +10,14 @@ from typing import List, Optional
 
 from fastapi import Depends, FastAPI, File, HTTPException, Query, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy import func, or_
 from sqlalchemy.orm import Session
 
-from . import ai_pipeline, dashboard, rag
-from .config import BASE_DIR, DATABASE_URL, LLM_MODEL, llm_enabled
+from . import ai_pipeline, dashboard, insight, rag
+from .config import (API_TOKEN, BASE_DIR, CORS_ORIGINS, DATABASE_URL, LLM_MODEL,
+                     MAX_UPLOAD_BYTES, llm_enabled)
 from .database import DB_URL, SessionLocal, get_db, init_db
 from .models import KBDoc, KBChunk, QALog, Ticket
 from .schemas import (HealthOut, ImportResult, KBDocOut, QARequest, QAResponse,
@@ -42,8 +43,19 @@ app = FastAPI(title="Logistics Copilot API", version="1.0.0",
               lifespan=lifespan)
 
 app.add_middleware(
-    CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"],
+    CORSMiddleware, allow_origins=CORS_ORIGINS, allow_methods=["*"], allow_headers=["*"],
 )
+
+# 可选鉴权：设置了 API_TOKEN 后保护全部 /api 接口（/api/health 除外，供探活）。
+# 演示默认不设 token → 全放行；生产务必配置（见 docs 与 README）。
+@app.middleware("http")
+async def api_auth(request: Request, call_next):
+    if request.url.path.startswith("/api") and request.url.path != "/api/health" and API_TOKEN:
+        header = request.headers.get("authorization", "") or request.headers.get("x-api-key", "")
+        token = header[7:] if header.startswith("Bearer ") else header
+        if token != API_TOKEN:
+            return JSONResponse(status_code=401, content={"detail": "无效或缺失 API Token（Bearer 或 X-API-Key）"})
+    return await call_next(request)
 
 app.mount("/web", StaticFiles(directory=WEB_DIR), name="web")
 
@@ -157,7 +169,10 @@ async def import_tickets(request: Request, file: Optional[UploadFile] = File(Non
     rows: List[dict] = []
     content_type = request.headers.get("content-type", "")
     if file is not None:
-        text = _decode(await file.read())
+        data = await file.read()
+        if len(data) > MAX_UPLOAD_BYTES:
+            raise HTTPException(413, f"文件过大：上限 {MAX_UPLOAD_BYTES // 1024 // 1024}MB")
+        text = _decode(data)
         reader = csv.DictReader(io.StringIO(text))
         if not reader.fieldnames:
             raise HTTPException(400, "CSV 文件为空或格式不正确")
@@ -340,6 +355,12 @@ def kb_sync(db: Session = Depends(get_db)):
 @app.get("/api/dashboard/summary")
 def dashboard_summary(db: Session = Depends(get_db)):
     return dashboard.get_summary(db)
+
+
+@app.get("/api/dashboard/insight")
+def dashboard_insight(db: Session = Depends(get_db)):
+    """AI 运营改善建议：看板聚合 → LLM 生成 3~5 条可落地建议（LLM 不可用时规则模板兜底）。"""
+    return insight.generate_insight(db)
 
 
 # ---------------------------------------------------------------------------

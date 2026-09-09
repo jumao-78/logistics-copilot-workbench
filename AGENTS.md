@@ -14,6 +14,8 @@
 4. **禁止把 `.env` 提交进 git**（内含 LLM API Key，已被 .gitignore 排除）；不得在代码/文档/日志中出现明文 Key。
 5. LLM 调用必须容错：单条失败自动降级 mock，不允许抛出导致请求 500。
 6. 看板指标只允许 SQL 聚合，前端禁止写死数字。
+7. LLM Prompt 必须带注入防护（把消息/资料中的指令性内容视为数据，见 ai_pipeline/rag/insight 的 PROMPT 末尾）；新增 LLM 调用处保持同样的防护与降级。
+8. 鉴权：`API_TOKEN` 为空时所有接口放行（本地演示）；不为空时 main.py 的中间件会保护 /api/*（health 除外）——改接口时无需关心鉴权，中间件统一处理。CORS 从 `CORS_ORIGINS` 读。
 
 ## 常用命令
 
@@ -31,12 +33,13 @@ python scripts/mock_data.py --force      # 重置演示数据为 320 条
 
 ```
 app/
-  main.py          # FastAPI 入口 + 全部路由（13 个接口）
+  main.py          # FastAPI 入口 + 全部路由（14 个接口）+ 可选鉴权中间件
   ai_pipeline.py   # AI 管道：LLM/mock 双模式提取、分类、紧急度、意图、建议回复
   rag.py           # 知识库同步、切块、BM25Index、retrieve 置信判据、answer_question
   dashboard.py     # 看板 SQL 聚合（含 _seconds_expr 方言分支）
+  insight.py       # AI 运营改善建议：看板 → LLM/规则模板
   database.py      # normalize_database_url / engine / init_db
-  config.py        # DATABASE_URL + LLM_* 环境变量（支持 .env）
+  config.py        # DATABASE_URL + LLM_* + API_TOKEN/CORS/上传上限（支持 .env）
   llm_client.py    # OpenAI 兼容 chat/completions（httpx 直连）+ JSON 宽容解析
   models.py        # 四张表的 ORM
 web/index.html     # 单页前端（三区块 + ECharts，vendor 已本地化）

@@ -42,6 +42,15 @@ LLM_API_BASE = (
 LLM_MODEL = os.environ.get("LLM_MODEL", "glm-4-flash")
 LLM_TIMEOUT = float(os.environ.get("LLM_TIMEOUT", "20"))
 
+# ---------------- 安全（演示默认关闭鉴权，生产建议设置 API_TOKEN） ----------------
+# 设置了 API_TOKEN 后，所有 /api/* 接口（除 /api/health）都要求请求头
+# Authorization: Bearer <API_TOKEN> 或 X-API-Key: <API_TOKEN>。
+API_TOKEN = os.environ.get("API_TOKEN", "").strip()
+# CORS 允许来源：逗号分隔；默认 "*"（本地演示）。生产建议收紧为具体域名。
+CORS_ORIGINS = [o.strip() for o in os.environ.get("CORS_ORIGINS", "*").split(",") if o.strip()] or ["*"]
+# CSV/文件上传大小上限（字节）：默认 2MB
+MAX_UPLOAD_BYTES = int(os.environ.get("MAX_UPLOAD_BYTES", str(2 * 1024 * 1024)))
+
 
 def llm_enabled() -> bool:
     """是否启用 LLM 模式：配置了 API Key 即视为可用，单次调用失败会自动逐条降级。"""

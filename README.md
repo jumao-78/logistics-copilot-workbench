@@ -131,6 +131,7 @@ LLM_MODEL=glm-4-flash
 | 知识库问答 | 无命中/置信不足 → “知识库中暂无相关内容，建议转人工客服” | ✅ |
 | 知识库 | kb/ 为 Obsidian 仓库，10 篇 FAQ 幂等同步（新增/修改/删除皆生效） | ✅ |
 | 运营看板 | 4 KPI 卡片（今日工单量/AI 自动处理率/平均首响/高紧急占比）+ 近 7 日趋势 + 分类分布 + Top 意图 + 超时工单表，全部 SQL 聚合 | ✅ |
+| 运营看板 | 🤖 AI 运营改善建议：看板聚合数据 → LLM 生成 3~5 条可落地建议（无 Key 自动降级规则模板） | ✅ |
 | 降级 | 无 Key/断网/LLM 报错 → mock 模式全流程可演示（单条粒度自动降级） | ✅ |
 | 评测 | 20 条独立评测集双模式对照：mock 分类 100%；LLM（glm-4-flash）经两轮 Prompt 调优（裸 prompt 仅 40% → 补分类/紧急度标准+few-shot 后 95%~100%）分类 95%+、字段提取 100% 且幻觉 0 处；紧急度/意图对照详见 docs/evaluation_report.md | ✅ |
 
@@ -150,6 +151,7 @@ LLM_MODEL=glm-4-flash
 | GET | `/api/kb/docs` / `/api/kb/docs/{id}` | 知识库文档列表/详情 |
 | POST | `/api/kb/sync` | 手动触发 kb/ → 数据库幂等同步 |
 | GET | `/api/dashboard/summary` | 看板聚合（KPI + 趋势 + 分布 + 超时表） |
+| GET | `/api/dashboard/insight` | AI 运营改善建议（看板聚合 → LLM 生成 3~5 条，无 Key 自动降级规则模板） |
 | GET | `/api/qa/logs` | 问答日志（评测/审计） |
 
 交互式文档：启动后访问 `/docs`（Swagger UI）。
@@ -170,6 +172,15 @@ DATABASE_URL=mysql+pymysql://user:password@localhost:3306/logistics_copilot?char
 `kb/` 目录用 Obsidian 直接打开即可维护（front matter 四件套：`title/category/tags/updated_at`），保存后运行 `python scripts/sync_kb.py` 幂等同步入库（增/改/删皆生效），问答即刻生效并自动标注来源。
 
 完整规范、切块与置信判据说明 → **[docs/Obsidian知识库管理指南.md](docs/Obsidian知识库管理指南.md)**
+
+完整规范、切块与置信判据说明 → **[docs/Obsidian知识库管理指南.md](docs/Obsidian知识库管理指南.md)**
+
+## 7.5 安全与可选鉴权
+
+- 演示默认**无鉴权**（本地运行即可）；部署到公网前务必设置环境变量 `API_TOKEN`，之后所有 `/api/*` 接口（`/api/health` 除外）都要求请求头 `Authorization: Bearer <token>` 或 `X-API-Key: <token>`，防止他人调用接口消耗你的 LLM 额度；
+- `CORS_ORIGINS` 可配置允许的前端来源（默认 `*`，生产建议收紧为具体域名）；
+- CSV 上传上限 `MAX_UPLOAD_BYTES`（默认 2MB）；单条消息 ≤3000 字符、问题 ≤500 字符（超长输入自动 422）；
+- LLM Prompt 内置注入防护：消息/问题中出现的"忽略指令、改变输出"等内容一律视为数据处理，不改变系统行为。
 
 ## 8. 交付物索引
 

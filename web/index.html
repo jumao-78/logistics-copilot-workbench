@@ -167,10 +167,13 @@
 
     <!-- ================= 运营看板 ================= -->
     <div class="tab-pane fade" id="tab-dashboard">
-      <div class="d-flex justify-content-between align-items-center mb-3">
-        <div class="fw-bold fs-5">📈 运营看板 <span class="text-muted small fs-6">（指标全部由 SQL 聚合）</span></div>
-        <button class="btn btn-sm btn-outline-primary" onclick="loadDashboard(true)">🔄 刷新</button>
-      </div>
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <div class="fw-bold fs-5">📈 运营看板 <span class="text-muted small fs-6">（指标全部由 SQL 聚合）</span></div>
+          <div class="d-flex gap-2">
+            <button class="btn btn-sm btn-primary" onclick="genInsight()">🤖 AI 改善建议</button>
+            <button class="btn btn-sm btn-outline-primary" onclick="loadDashboard(true)">🔄 刷新</button>
+          </div>
+        </div>
       <div class="row g-3 mb-3" id="kpiRow">
         <div class="col-md-3"><div class="card kpi-card p-3"><div class="d-flex justify-content-between align-items-center">
           <div><div class="kpi-label">今日工单量</div><div class="kpi-value" id="kpiToday">–</div></div>
@@ -203,6 +206,15 @@
   <footer class="text-center mt-4">Logistics Copilot · 演示项目 · <b>所有数据均为模拟数据</b>（管道真实、数据为造） · FastAPI + SQLAlchemy + RAG + ECharts</footer>
 </div>
 </div>
+
+<!-- 工单详情 Modal -->
+<div class="modal fade" id="insightModal" tabindex="-1"><div class="modal-dialog modal-lg modal-dialog-scrollable"><div class="modal-content">
+  <div class="modal-header py-2"><h6 class="modal-title fw-bold">🤖 AI 运营改善建议</h6>
+    <button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+  <div class="modal-body"><div id="insightMeta" class="text-muted small mb-2"></div>
+    <div id="insightBody" class="small" style="white-space:pre-wrap;line-height:1.9"></div>
+  </div>
+</div></div></div>
 
 <!-- 工单详情 Modal -->
 <div class="modal fade" id="ticketModal" tabindex="-1"><div class="modal-dialog modal-lg modal-dialog-scrollable"><div class="modal-content">
@@ -429,6 +441,20 @@ async function showKbDoc(id) {
 }
 
 // ---------- 运营看板 ----------
+async function genInsight() {
+  const body = document.getElementById("insightBody");
+  body.textContent = "⏳ AI 正在基于看板数据生成改善建议…";
+  document.getElementById("insightMeta").textContent = "";
+  new bootstrap.Modal("#insightModal").show();
+  try {
+    const r = await api("/api/dashboard/insight");
+    document.getElementById("insightMeta").textContent =
+      `基于当前看板聚合数据生成 · ${r.mode === "llm" ? "LLM（glm-4-flash）" : "规则模板"} · ${r.generated_at}`;
+    body.textContent = r.insight;
+  } catch (e) {
+    body.textContent = "❌ " + e.message;
+  }
+}
 async function loadDashboard(force) {
   const s = await api("/api/dashboard/summary");
   const k = s.kpi;
