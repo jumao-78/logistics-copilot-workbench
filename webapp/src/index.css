@@ -236,3 +236,9 @@ input:focus-visible, textarea:focus-visible {
   outline: 2px solid rgba(29, 78, 216, 0.55);
   outline-offset: 1px;
 }
+
+/* 图表点击不产生系统焦点框（保持键盘可访问性由 wrapper 承担） */
+svg, svg *, .recharts-wrapper, .recharts-surface, .recharts-sector,
+.recharts-pie, .recharts-radial-bar-sector { outline: none !important; }
+.recharts-sector:focus, .recharts-pie-sector:focus, .recharts-radial-bar-sector:focus { outline: none !important; }
+button { -webkit-tap-highlight-color: transparent; }
