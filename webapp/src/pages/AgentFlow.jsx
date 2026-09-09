@@ -253,6 +253,7 @@ export default function AgentFlow({ health }) {
   const [calls, setCalls] = useState([]);
   const [logs, setLogs] = useState([]);
   const [request, setRequest] = useState("");
+  const [inputMsg, setInputMsg] = useState("");
   const [tickets, setTickets] = useState(0);
   const [running, setRunning] = useState(false);
   const [activeIdx, setActiveIdx] = useState(-1);
@@ -278,7 +279,7 @@ export default function AgentFlow({ health }) {
     setAgents(AGENTS.map((a) => ({ ...a, status: "wait" })));
     timers.current.forEach(clearTimeout);
     timers.current = [];
-    const msg = SAMPLE_MSG;
+    const msg = (inputMsg || "").trim() || SAMPLE_MSG;   // 用户输入优先，空则示例
     setRequest(msg);
 
     const step = [
@@ -328,6 +329,28 @@ export default function AgentFlow({ health }) {
   return (
     <div className="space-y-5">
       <PageHeader running={running} agents={agents} tickets={tickets} onRun={run} />
+
+      {/* 自定义输入：驱动多 Agent 处理任意客户消息 */}
+      <Card className="p-3.5">
+        <div className="flex items-center gap-2.5">
+          <div className="grad flex h-8 w-8 shrink-0 items-center justify-center rounded-xl shadow-[0_6px_14px_-5px_rgba(37,99,235,.5)]"><User size={14} className="text-white" /></div>
+          <input
+            value={inputMsg}
+            onChange={(e) => setInputMsg(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && run()}
+            placeholder="输入客户消息（提单号 / 问题描述），回车驱动多 Agent 处理；留空则使用示例消息"
+            className="min-w-0 flex-1 rounded-xl border border-line bg-surface2/40 px-3.5 py-2 text-[13px] placeholder:text-ink3 focus:border-blue-300 focus:bg-surface"
+          />
+          <button onClick={() => setInputMsg(SAMPLE_MSG)}
+            className="shrink-0 rounded-xl border border-line px-3 py-2 text-[12px] text-ink2 transition hover:bg-surface2">
+            填入示例
+          </button>
+          <button onClick={run} disabled={running}
+            className="btn-grad flex shrink-0 items-center gap-1.5 rounded-xl px-4 py-2 text-[12.5px] font-semibold">
+            {running ? <Loader2 size={13} className="animate-spin" /> : <Play size={13} />} 运行
+          </button>
+        </div>
+      </Card>
 
       <WorkflowCanvas agents={agents} request={request} activeIdx={activeIdx} onNodeClick={setDrawer} />
 
