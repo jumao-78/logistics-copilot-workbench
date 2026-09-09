@@ -136,7 +136,7 @@ export default function Knowledge({ health }) {
         {/* 左：AI Answer Workspace */}
         <div className="col-span-8">
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45 }}>
-            <Card className="relative min-h-[320px] overflow-hidden p-6">
+            <Card className="relative min-h-[540px] overflow-hidden p-6">
               {(phase === "done" || phase === "empty") && (
                 <div className="pointer-events-none absolute inset-0 rounded-[28px] shadow-[0_0_44px_-12px_rgba(29,78,216,.32)] ring-1 ring-blue-200/80" />
               )}
@@ -172,13 +172,25 @@ export default function Knowledge({ health }) {
               )}
 
               {!thinking && !ans && (
-                <div className="py-12 text-center">
+                <div className="flex min-h-[480px] flex-col items-center justify-center text-center">
                   <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-50 to-cyan-50 ring-1 ring-blue-100">
                     <BookOpen size={22} className="text-blue-600" />
                   </div>
                   <div className="text-[15px] font-semibold text-ink">向知识库提问，获得带来源的回答</div>
                   <div className="mx-auto mt-2 max-w-md text-[12.5px] leading-relaxed text-ink3">
                     覆盖清关、滞箱费、索赔等高频问题 · {docs.length} 篇文档 · {totalChunks} 个检索片段 · 答不上自动建议转人工
+                  </div>
+                  <div className="mx-auto mt-5 grid max-w-md grid-cols-3 gap-2 text-left">
+                    {[
+                      { k: "检索", v: "BM25 命中片段" },
+                      { k: "引用", v: "来源一键展开" },
+                      { k: "兜底", v: "无命中转人工" },
+                    ].map((x) => (
+                      <div key={x.k} className="rounded-xl bg-surface2/60 px-3 py-2.5">
+                        <div className="text-[11px] font-semibold text-ink">{x.k}</div>
+                        <div className="mt-0.5 text-[10px] leading-snug text-ink3">{x.v}</div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               )}
@@ -212,9 +224,9 @@ export default function Knowledge({ health }) {
           </motion.div>
         </div>
 
-        {/* 右：Evidence Center */}
-        <div className="col-span-4">
-          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45, delay: 0.08 }}>
+        {/* 右：Evidence + 文档总览（等高链） */}
+        <div className="col-span-4 space-y-5">
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45, delay: 0.08 }} >
             <Card className="p-5">
               <div className="mb-3 flex items-center justify-between">
                 <span className="flex items-center gap-1.5 text-[12.5px] font-semibold text-ink2"><FileText size={13} className="text-ink3" /> 证据与来源</span>
@@ -260,13 +272,33 @@ export default function Knowledge({ health }) {
               )}
             </Card>
           </motion.div>
+
+          {/* 文档总览卡：平衡右栏高度 */}
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45, delay: 0.12 }} >
+            <Card className="p-5">
+              <div className="mb-3 flex items-center justify-between">
+                <span className="flex items-center gap-1.5 text-[12.5px] font-semibold text-ink2"><BookOpen size={13} className="text-ink3" /> 知识库文档</span>
+                <span className="rounded-full bg-surface2 px-2 py-0.5 text-[10px] text-ink3">{docs.length} 篇</span>
+              </div>
+              <div className="max-h-[240px] space-y-0.5 overflow-y-auto pr-1">
+                {docs.map((d) => (
+                  <button key={d.id} onClick={() => api.kbDoc(d.id).then(setDetail).catch(() => {})}
+                    className="row-hover flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left">
+                    <span className="num w-6 shrink-0 text-[10.5px] text-ink3">{String(d.id).padStart(2, "0")}</span>
+                    <span className="min-w-0 flex-1 truncate text-[12px] text-ink/85">{d.title}</span>
+                    <span className="num shrink-0 text-[10px] text-ink3">{d.chunks} 块</span>
+                  </button>
+                ))}
+              </div>
+            </Card>
+          </motion.div>
         </div>
       </div>
 
       {/* ═══ Bottom：RAG Pipeline + Related Questions ═══ */}
-      <div className="grid grid-cols-12 items-start gap-5">
-        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45, delay: 0.05 }} className="col-span-7">
-          <Card className="p-5">
+      <div className="grid grid-cols-12 items-stretch gap-5">
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45, delay: 0.05 }} className="col-span-7 flex flex-col">
+          <Card className="flex flex-1 flex-col p-5">
             <div className="mb-3 flex items-center justify-between">
               <span className="text-[13px] font-semibold text-ink">RAG 检索管道</span>
               <span className="text-[10.5px] text-ink3">BM25 关键词索引 · 向量检索为升级路径</span>
@@ -296,8 +328,8 @@ export default function Knowledge({ health }) {
           </Card>
         </motion.div>
 
-        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45, delay: 0.1 }} className="col-span-5">
-          <Card className="p-5">
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45, delay: 0.1 }} className="col-span-5 flex flex-col">
+          <Card className="flex flex-1 flex-col p-5">
             <div className="mb-3 flex items-center gap-1.5 text-[13px] font-semibold text-ink"><Sparkles size={13} className="text-blue-500" /> 相关问题</div>
             <div className="grid grid-cols-1 gap-1">
               {RELATED.map((s) => (
