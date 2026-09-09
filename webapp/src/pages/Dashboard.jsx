@@ -105,17 +105,39 @@ export default function Dashboard({ health }) {
 
         <Reveal delay={0.18} className="col-span-4">
           <Card className="h-full">
-            <CardHead title="分类分布" sub="Category mix" />
+            <CardHead title="分类分布" sub={`共 ${sum?.kpi.total ?? "—"} 条工单`} />
             {cat.length ? (
-              <div className="h-[260px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Tooltip {...TOOLTIP} formatter={(v) => [`${v} 条`, ""]} />
-                    <Pie data={cat} dataKey="value" nameKey="name" innerRadius={52} outerRadius={82} paddingAngle={3} strokeWidth={0}>
-                      {cat.map((c) => <Cell key={c.name} fill={c.fill} />)}
-                    </Pie>
-                  </PieChart>
-                </ResponsiveContainer>
+              <div className="flex items-center gap-2">
+                {/* 环形 + 中心总数 */}
+                <div className="relative h-[188px] w-[188px] shrink-0">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Tooltip {...TOOLTIP} formatter={(v, n) => [`${v} 条 · ${((v / sum.kpi.total) * 100).toFixed(1)}%`, n]} />
+                      <Pie data={cat} dataKey="value" nameKey="name" innerRadius={62} outerRadius={88} paddingAngle={2.5} strokeWidth={0}>
+                        {cat.map((c) => <Cell key={c.name} fill={c.fill} />)}
+                      </Pie>
+                    </PieChart>
+                  </ResponsiveContainer>
+                  <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
+                    <span className="num text-[26px] font-semibold leading-none text-ink">{sum?.kpi.total}</span>
+                    <span className="mt-1 text-[10.5px] text-ink3">全部工单</span>
+                  </div>
+                </div>
+                {/* 分类明细图例 */}
+                <div className="min-w-0 flex-1 space-y-[7px]">
+                  {cat.map((c) => {
+                    const pct = sum?.kpi.total ? ((c.value / sum.kpi.total) * 100).toFixed(1) : "0";
+                    const isTop = c.value === Math.max(...cat.map((x) => x.value));
+                    return (
+                      <div key={c.name} className={`flex items-center gap-2 rounded-lg px-2 py-[5px] ${isTop ? "bg-blue-50/60" : "hover:bg-surface2/60"}`}>
+                        <span className="h-[9px] w-[9px] shrink-0 rounded-[3px]" style={{ background: c.fill }} />
+                        <span className="text-[12.5px] font-medium text-ink">{c.name}</span>
+                        <span className="num ml-auto text-[12px] font-semibold text-ink">{c.value}</span>
+                        <span className="num w-[46px] text-right text-[11px] text-ink3">{pct}%</span>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             ) : <Loading />}
           </Card>
