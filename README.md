@@ -14,17 +14,33 @@
 
 ## 界面预览
 
-**运营看板**（KPI 卡片 + 近 7 日趋势 + 分类分布 + Top 意图 + 超时工单，指标全部 SQL 聚合）
+**① 总览 · Today Operations Center**（Hero + 今日 KPI + 按小时工单趋势 + 高优队列 + AI Operations Feed）
 
-![运营看板](docs/screenshots/dashboard.png)
+![总览](docs/screenshots/01-dashboard.jpg)
 
-**工单台**（粘贴原始消息 → AI 自动提取 8 字段 + 建议回复，CSV 批量导入）
+**② 工单台 · AI Decision Workspace**（Ticket Inbox / Shipment Workspace / AI Decision Center 三栏）
 
-![工单台](docs/screenshots/tickets.png)
+![工单台](docs/screenshots/02-inbox.jpg)
 
-**知识库问答**（RAG 检索 + 来源标注，答不上自动建议转人工）
+**③ 知识库 · Enterprise RAG Workspace**（搜索前）
 
-![知识库问答](docs/screenshots/qa.png)
+![知识库检索](docs/screenshots/03-knowledge.jpg)
+
+**④ 知识库问答**（RAG 检索结果：答案 + 证据来源 + 检索管道）
+
+![知识库问答](docs/screenshots/04-knowledge-answer.jpg)
+
+**⑤ 智能管道 · AI Agent Runtime**（5 Agent 编排可视化 + 运行时监控）
+
+![智能管道](docs/screenshots/05-agentflow.jpg)
+
+**⑥ 数据分析 · AI Operations Intelligence**（AI 效率 + 处理漏斗 + 风险智能 + 改进中心）
+
+![数据分析](docs/screenshots/06-analytics.jpg)
+
+**⑦ 设置 · Workspace Settings**
+
+![设置](docs/screenshots/07-settings.jpg)
 
 ---
 
