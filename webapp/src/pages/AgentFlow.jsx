@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Brain, Radar, BookOpen, Cpu, PenLine, Loader2, CheckCircle2, Play, X,
   Zap, Activity, ScrollText, Wrench, ArrowRight, User, Bot, Layers,
+  ShieldCheck, Copy,
 } from "lucide-react";
 import { Card, Badge, Dot, Empty } from "../components/ui.jsx";
 import { api, cls } from "../api.js";
@@ -257,6 +258,7 @@ export default function AgentFlow({ health }) {
   const [activeIdx, setActiveIdx] = useState(-1);
   const [drawer, setDrawer] = useState(null);
   const [output, setOutput] = useState(null);
+  const [confirmed, setConfirmed] = useState(false);
   const timers = useRef([]);
 
   useEffect(() => {
@@ -270,6 +272,7 @@ export default function AgentFlow({ health }) {
     if (running) return;
     setRunning(true);
     setOutput(null);
+    setConfirmed(false);
     setCalls([]);
     setLogs([]);
     setAgents(AGENTS.map((a) => ({ ...a, status: "wait" })));
@@ -342,7 +345,7 @@ export default function AgentFlow({ health }) {
             <Card className="p-5">
               <div className="mb-3 flex items-center justify-between">
                 <span className="flex items-center gap-1.5 text-[13px] font-semibold text-ink"><Bot size={14} className="text-emerald-500" /> 执行输出 · 结构化工单 #{output.id}</span>
-                <Badge tone="success">已完成 · 进入工单台确认</Badge>
+                {confirmed ? <Badge tone="success">已人工确认 · 可发送</Badge> : <Badge tone="warning">待人工确认</Badge>}
               </div>
               <div className="flex flex-wrap gap-2">
                 {[["分类", output.category], ["紧急度", output.urgency], ["意图", output.intent], ["提单号", output.bill_no || "—"], ["柜号", output.container_no || "—"], ["航线", [output.pol, output.pod].filter(Boolean).join(" → ") || "—"]].map(([k, v]) => (
@@ -350,6 +353,27 @@ export default function AgentFlow({ health }) {
                 ))}
               </div>
               <div className="mt-3 rounded-xl bg-surface2/50 px-3.5 py-2.5 text-[12.5px] leading-relaxed text-ink/85">{output.suggested_reply}</div>
+              {/* 人工确认环节：人审后发送 */}
+              <div className="mt-4 flex items-center gap-3 border-t border-line/70 pt-3.5">
+                <span className="flex items-center gap-1.5 text-[11.5px] text-ink2">
+                  <ShieldCheck size={13} className={confirmed ? "text-emerald-500" : "text-amber-500"} />
+                  {confirmed ? "已确认，回复已复制到剪贴板，可粘贴发送" : "AI 建议需人工确认后发送"}
+                </span>
+                <div className="ml-auto flex items-center gap-2">
+                  {!confirmed && (
+                    <button onClick={() => {
+                      setConfirmed(true);
+                      try { navigator.clipboard?.writeText(output.suggested_reply || ""); } catch (_) {}
+                    }} className="btn-grad flex items-center gap-1.5 rounded-xl px-4 py-2 text-[12.5px] font-semibold">
+                      <CheckCircle2 size={13} /> 确认并复制
+                    </button>
+                  )}
+                  <button onClick={() => { navigator.clipboard?.writeText(output.suggested_reply || ""); }}
+                    className="flex items-center gap-1.5 rounded-xl border border-line px-3 py-2 text-[12px] text-ink2 hover:bg-surface2">
+                    <Copy size={12} /> 仅复制
+                  </button>
+                </div>
+              </div>
             </Card>
           </motion.div>
         )}
