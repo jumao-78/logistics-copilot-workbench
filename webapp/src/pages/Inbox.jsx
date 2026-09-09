@@ -4,7 +4,7 @@ import {
   Search, Filter, MapPin, Globe2, Copy, Send, RotateCcw,
   Sparkles, Bot, ShieldCheck, Languages, PenLine, CheckCircle2, Loader2,
 } from "lucide-react";
-import { Card, CardHead, CategoryBadge, UrgencyBadge, StatusBadge, Badge, Dot, Empty, Loading } from "../components/ui.jsx";
+import { Card, CardHead, CategoryBadge, UrgencyBadge, StatusBadge, Badge, Dot, Empty, Loading, GlassCard } from "../components/ui.jsx";
 import { api, fmt, cls } from "../api.js";
 
 const Q_STATUS = { 高: "danger", 中: "warning", 低: "gray" };
@@ -67,6 +67,53 @@ function InboxList({ list, sel, setSel, q, setQ, onRefresh }) {
   );
 }
 
+/* 动态 Shipment Progress：流动光进度 + 六阶段节点 */
+const SHIP_STEPS = ["订舱", "提柜", "截关", "开航", "到港", "清关"];
+function ShipmentProgress({ ticket }) {
+  // 由真实字段推导当前阶段（视觉演示：字段越全阶段越深）
+  let stage = 1;
+  if (ticket.bill_no) stage += 1;
+  if (ticket.container_no) stage += 1;
+  if (ticket.pol && ticket.pod) stage += 1;
+  if (ticket.intent === "催件") stage += 1;
+  stage = Math.max(1, Math.min(SHIP_STEPS.length, stage));
+  const pct = (stage / SHIP_STEPS.length) * 100;
+  return (
+    <div className="mt-4">
+      <div className="mb-2 flex items-center justify-between">
+        <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-ink3">Shipment Progress</span>
+        <span className="num text-[10.5px] font-medium text-blue-700">{stage}/{SHIP_STEPS.length} · {SHIP_STEPS[stage - 1]}</span>
+      </div>
+      <div className="relative">
+        <div className="h-[5px] w-full overflow-hidden rounded-full bg-slate-200/70">
+          <div className="progress-rise relative h-full overflow-hidden rounded-full" style={{ width: `${pct}%` }}>
+            <div className="progress-flow absolute inset-0" />
+          </div>
+        </div>
+        <div className="mt-2 flex justify-between">
+          {SHIP_STEPS.map((s, i) => {
+            const idx = i + 1;
+            const done = idx < stage;
+            const cur = idx === stage;
+            return (
+              <div key={s} className="flex w-1/6 flex-col items-center">
+                <span
+                  className={
+                    done ? "grad h-[9px] w-[9px] rounded-full"
+                      : cur ? "h-[11px] w-[11px] rounded-full bg-white shadow-[0_0_12px_rgba(29,78,216,.8)] ring-2 ring-blue-500"
+                      : "h-[9px] w-[9px] rounded-full bg-slate-300"
+                  }
+                />
+                <span className={`mt-1 text-[9.5px] leading-none ${done ? "text-ink2" : cur ? "font-semibold text-blue-700" : "text-ink3"}`}>{s}</span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* 中栏：详情 + 对话 */
 function Detail({ ticket, onReload }) {
   if (!ticket) return <Empty text="从左侧选择一张工单" />;
@@ -104,6 +151,9 @@ function Detail({ ticket, onReload }) {
           {field("目的港 POD", ticket.pod)}
         </div>
         {route && <div className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-3 py-1 text-[11.5px] text-blue-700"><MapPin size={11} /> {route}</div>}
+
+        {/* 动态 Shipment Progress */}
+        <ShipmentProgress ticket={ticket} />
       </div>
 
       {/* Timeline */}
@@ -169,7 +219,7 @@ function Copilot({ ticket, health }) {
   const R = 26, C = 2 * Math.PI * R;
 
   return (
-    <Card className="h-full overflow-hidden p-5">
+    <GlassCard className="h-full overflow-hidden p-5">
       <div className="mb-4 flex items-center gap-2">
         <div className="grad flex h-8 w-8 items-center justify-center rounded-xl shadow-[0_6px_14px_-4px_rgba(37,99,235,.5)]"><Bot size={15} className="text-white" /></div>
         <div>
@@ -240,7 +290,7 @@ function Copilot({ ticket, health }) {
           </div>
         </>
       )}
-    </Card>
+    </GlassCard>
   );
 }
 

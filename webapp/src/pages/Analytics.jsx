@@ -70,6 +70,7 @@ export default function Analytics() {
                   <defs>
                     <linearGradient id="slaG" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#1d4ed8" /><stop offset="100%" stopColor="#06b6d4" /></linearGradient>
                   </defs>
+                  <Tooltip {...TOOLTIP} formatter={(v) => [`${v}%`, "SLA"]} />
                   <RadialBar dataKey="value" cornerRadius={12} background={{ fill: "rgba(148,163,184,.12)" }} />
                 </RadialBarChart>
               </ResponsiveContainer>

@@ -131,11 +131,19 @@ export default function Dashboard({ health }) {
               <div className="h-[230px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={intents} layout="vertical" margin={{ top: 0, right: 10, left: -6, bottom: 0 }}>
+                    <defs>
+                      {["igA", "igB", "igC"].map((id, i) => (
+                        <linearGradient key={id} id={id} x1="0" y1="0" x2="1" y2="0">
+                          <stop offset="0%" stopColor={GRAD[i]} stopOpacity={0.55} />
+                          <stop offset="100%" stopColor={GRAD[i]} stopOpacity={1} />
+                        </linearGradient>
+                      ))}
+                    </defs>
                     <XAxis type="number" hide allowDecimals={false} />
                     <YAxis type="category" dataKey="name" width={46} tick={{ fontSize: 11.5, fill: "#64748b" }} axisLine={false} tickLine={false} />
                     <Tooltip {...TOOLTIP} cursor={{ fill: "rgba(29,78,216,.05)" }} />
                     <Bar dataKey="value" radius={[0, 8, 8, 0]} barSize={16}>
-                      {intents.map((_, i) => <Cell key={i} fill={GRAD[i % 3]} fillOpacity={0.9} />)}
+                      {intents.map((_, i) => <Cell key={i} fill={`url(#${["igA", "igB", "igC"][i % 3]})`} />)}
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>

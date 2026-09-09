@@ -2,12 +2,32 @@ import React from "react";
 import { motion } from "framer-motion";
 import { cls } from "../api.js";
 
-/* 通用浮白卡片 */
+/* 通用浮白卡片（Framer Motion Elevation hover） */
 export function Card({ className = "", children, hover = true, ...rest }) {
+  const Comp = hover ? motion.div : "div";
   return (
-    <div className={cls("card-premium p-6", hover ? "" : "", className)} {...rest}>
+    <Comp
+      className={cls("card-premium p-6", className)}
+      whileHover={hover ? { y: -3 } : undefined}
+      transition={{ type: "spring", stiffness: 320, damping: 24 }}
+      {...rest}
+    >
       {children}
-    </div>
+    </Comp>
+  );
+}
+
+/* Glass Edge 卡片（仅 AI Copilot 等关键 AI 面板使用） */
+export function GlassCard({ className = "", children, ...rest }) {
+  return (
+    <motion.div
+      className={cls("glass-edge p-6", className)}
+      whileHover={{ y: -2 }}
+      transition={{ type: "spring", stiffness: 300, damping: 26 }}
+      {...rest}
+    >
+      {children}
+    </motion.div>
   );
 }
 
@@ -68,14 +88,15 @@ export function Dot({ tone = "success", pulse = false }) {
   return <span className={cls("inline-block h-2 w-2 rounded-full", c[tone], pulse && "ai-pulse")} />;
 }
 
-/* 入场动画容器 */
+/* 入场动画容器（Scroll Reveal：进入视口触发，仅一次） */
 export function Reveal({ children, delay = 0, y = 18, className }) {
   return (
     <motion.div
-      className={className}
+      className={cls("reveal-on", className)}
       initial={{ opacity: 0, y }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.55, delay, ease: [0.22, 0.61, 0.36, 1] }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-40px" }}
+      transition={{ duration: 0.6, delay, ease: [0.22, 0.61, 0.36, 1] }}
     >
       {children}
     </motion.div>

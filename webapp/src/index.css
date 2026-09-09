@@ -99,6 +99,100 @@ body {
 }
 .ai-pulse { animation: pulse-soft 2.2s ease-in-out infinite; }
 
+/* ───────── Premium Polish 增补 ───────── */
+
+/* Soft Ambient Lighting：卡片常驻一层大范围环境蓝光 */
+.card-premium {
+  box-shadow:
+    0 1px 2px rgba(16, 24, 40, 0.04),
+    0 8px 24px rgba(16, 24, 40, 0.06),
+    0 0 0 1px rgba(148, 163, 184, 0.04),
+    0 24px 70px -30px rgba(37, 99, 235, 0.10);
+}
+.card-premium:hover {
+  transform: translateY(-4px);
+  box-shadow:
+    0 2px 4px rgba(16, 24, 40, 0.05),
+    0 24px 54px -16px rgba(37, 99, 235, 0.20),
+    0 0 0 1.5px rgba(29, 78, 216, 0.16),
+    0 44px 110px -34px rgba(6, 182, 212, 0.16);
+  outline-color: transparent;
+}
+
+/* Glass Edge：AI Copilot 专用（半透明白玻璃 + 渐变描边 + 顶光） */
+.glass-edge {
+  position: relative;
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.88), rgba(248, 250, 252, 0.72));
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+  border-radius: 28px;
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    inset 0 -1px 0 rgba(148, 163, 184, 0.12),
+    0 1px 2px rgba(16, 24, 40, 0.04),
+    0 18px 48px -18px rgba(37, 99, 235, 0.24);
+}
+.glass-edge::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(150deg, rgba(29, 78, 216, 0.55), rgba(255, 255, 255, 0) 30%, rgba(255, 255, 255, 0) 62%, rgba(6, 182, 212, 0.5));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+.glass-edge::after {
+  content: "";
+  position: absolute;
+  inset-x: 8%;
+  top: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.95), transparent);
+}
+
+/* Shipment Progress：流动光 */
+@keyframes flow-x {
+  0% { background-position: 0% 0; }
+  100% { background-position: 200% 0; }
+}
+.progress-flow {
+  background-image: linear-gradient(90deg, #1d4ed8 0%, #4f46e5 30%, #06b6d4 55%, #4f46e5 80%, #1d4ed8 100%);
+  background-size: 200% 100%;
+  animation: flow-x 2.4s linear infinite;
+}
+@keyframes rise-fill {
+  from { width: 0%; }
+}
+.progress-rise { animation: rise-fill 1.2s cubic-bezier(0.22, 0.61, 0.36, 1) both; }
+
+/* Scroll Reveal 辅助 */
+.reveal-on { will-change: opacity, transform; }
+
+/* Sidebar Floating Active Indicator */
+.side-active {
+  position: relative;
+  background: linear-gradient(120deg, rgba(29, 78, 216, 0.08), rgba(6, 182, 212, 0.04));
+}
+.side-active::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 22%;
+  bottom: 22%;
+  width: 3px;
+  border-radius: 99px;
+  background: linear-gradient(180deg, #1d4ed8, #4f46e5 60%, #06b6d4);
+  box-shadow: 0 0 10px rgba(29, 78, 216, 0.55);
+}
+.side-item { transition: background 0.22s ease, transform 0.2s ease, color 0.22s ease; }
+.side-item:hover { background: rgba(241, 245, 249, 0.9); color: var(--color-ink); transform: translateX(2px); }
+
+html { scroll-behavior: smooth; }
+
 /* AI Orb 悬浮 */
 @keyframes orb-float {
   0%, 100% { transform: translateY(0px); }

@@ -68,7 +68,8 @@ export default function AgentFlow({ health }) {
                 <motion.div
                   initial={{ opacity: 0, y: 14 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.09 }}
+                  whileHover={{ y: -5 }}
+                  transition={{ delay: i * 0.09, type: "spring", stiffness: 260, damping: 22 }}
                   className={`rounded-3xl border p-5 transition-all duration-300 ${active ? "border-blue-300 bg-blue-50/60 shadow-[0_14px_34px_-14px_rgba(29,78,216,.45)]" : "border-line bg-surface"} ${done ? "opacity-100" : ""}`}
                   style={done && !active ? { outline: "1px solid rgba(16,185,129,.25)" } : {}}
                 >
