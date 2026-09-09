@@ -16,7 +16,7 @@ export default function HeroHeader({ health }) {
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.7, ease: [0.22, 0.61, 0.36, 1] }}
-      className="relative h-[300px] overflow-hidden rounded-[36px]"
+      className="relative h-[236px] overflow-hidden rounded-[36px]"
       style={{
         background:
           "linear-gradient(118deg, #0b1e4b 0%, #123a8f 30%, #4f46e5 68%, #0e7490 100%)",
@@ -58,16 +58,16 @@ export default function HeroHeader({ health }) {
       </div>
 
       {/* 左下标题区 */}
-      <div className="absolute bottom-9 left-10 max-w-[560px]">
+      <div className="absolute bottom-8 left-10 max-w-[560px]">
         <div className="mb-2 flex items-center gap-2 text-[12px] font-semibold uppercase tracking-[0.22em] text-blue-200/80">
           <Sparkles size={13} /> AI 智能客服工作台
         </div>
-        <h1 className="display text-[40px] font-semibold leading-[1.05] tracking-[-0.02em] text-white">
+        <h1 className="display text-[33px] font-semibold leading-[1.08] tracking-[-0.02em] text-white">
           让全球物流工单
           <br />
           用 AI 工作流自动闭环。
         </h1>
-        <p className="mt-3 text-[14.5px] leading-relaxed text-blue-100/75">
+        <p className="mt-2 text-[13.5px] leading-relaxed text-blue-100/75">
           {health ? `${health.tickets} 张工单 · ${health.kb_docs} 篇知识库 · ${health.qa_logs} 次问答` : "正在连接工作区…"}
         </p>
       </div>
@@ -79,12 +79,12 @@ export default function HeroHeader({ health }) {
 
       {/* 航线轨道核心 —— 右下角固定，避开所有文字区 */}
       <motion.div
-        className="pointer-events-none absolute bottom-8 right-[6%]"
+        className="pointer-events-none absolute right-[6%] top-[46%]"
         initial={{ opacity: 0, scale: 0.85 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.45, duration: 0.9, ease: "easeOut" }}
       >
-        <div className="orb-float relative h-[168px] w-[168px]">
+        <div className="orb-float relative h-[132px] w-[132px]">
           {/* 环境光晕 */}
           <div
             className="absolute -inset-6 rounded-full"
