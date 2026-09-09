@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar } from "recharts";
 import { motion } from "framer-motion";
-import { AlertTriangle, Activity, Clock, Flame, ShieldAlert, ArrowUpRight, Sparkles, Radio } from "lucide-react";
+import { AlertTriangle, Activity, Clock, Flame, ShieldAlert, ArrowUpRight, Sparkles, Radio, Loader2 } from "lucide-react";
 import HeroHeader from "../components/HeroHeader.jsx";
 import { Card, CardHead, CategoryBadge, UrgencyBadge, StatusBadge, Reveal, Empty, Loading, Dot } from "../components/ui.jsx";
 import { api, fmt } from "../api.js";
@@ -39,14 +39,22 @@ function KpiCard({ icon: Icon, label, value, chip, note, tone, delay, accent }) 
 export default function Dashboard({ health }) {
   const [sum, setSum] = useState(null);
   const [ins, setIns] = useState(null);
+  const [loadingIns, setLoadingIns] = useState(false);
   const [queue, setQueue] = useState(null);
   const [err, setErr] = useState(false);
 
   useEffect(() => {
     api.summary().then(setSum).catch(() => setErr(true));
     api.tickets({ page_size: 6, status: "待处理" }).then((d) => setQueue(d.items)).catch(() => {});
-    api.insight().then(setIns).catch(() => {});
+    // 洞察改为手动触发（loadInsight），避免每次进入页面消耗 LLM 额度
   }, []);
+
+  const loadInsight = async () => {
+    if (loadingIns) return;
+    setLoadingIns(true);
+    try { const r = await api.insight(); setIns(r); } catch (_) { /* 保留空态，用户可重试 */ }
+    setLoadingIns(false);
+  };
 
   const trend = sum?.trend || [];
   const todayDelta = useMemo(() => {
@@ -218,12 +226,30 @@ export default function Dashboard({ health }) {
         </Reveal>
       </div>
 
-      {/* AI 改善建议 */}
-      {ins && (
-        <Reveal delay={0.1}>
-          <Card className="relative overflow-hidden">
-            <div className="pointer-events-none absolute -right-20 -top-24 h-64 w-64 rounded-full" style={{ background: "radial-gradient(circle, rgba(29,78,216,.10), transparent 65%)" }} />
-            <CardHead title="AI 运营洞察" sub={`${ins.mode === "llm" ? "LLM 生成 · glm-4-flash" : "规则模板生成"} · ${ins.generated_at?.slice(5, 16)}`} right={<span className="rounded-full bg-blue-50 px-3 py-1 text-[11.5px] font-medium text-blue-700">洞察</span>} />
+      {/* AI 改善建议（手动触发，避免每次进页面消耗 LLM 额度） */}
+      <Reveal delay={0.1}>
+        <Card className="relative overflow-hidden">
+          <div className="pointer-events-none absolute -right-20 -top-24 h-64 w-64 rounded-full" style={{ background: "radial-gradient(circle, rgba(29,78,216,.10), transparent 65%)" }} />
+          <CardHead title="AI 运营洞察"
+            sub={ins ? `${ins.mode === "llm" ? "LLM 生成 · glm-4-flash" : "规则模板生成"} · ${ins.generated_at?.slice(5, 16)}` : "基于看板聚合数据生成可落地建议"}
+            right={
+              ins ? (
+                <button onClick={loadInsight} disabled={loadingIns}
+                  className="rounded-full bg-blue-50 px-3 py-1 text-[11.5px] font-medium text-blue-700 transition hover:bg-blue-100 disabled:opacity-60">
+                  {loadingIns ? "生成中…" : "重新生成"}
+                </button>
+              ) : (
+                <button onClick={loadInsight} disabled={loadingIns}
+                  className="btn-grad rounded-full px-4 py-1.5 text-[12px] font-semibold">
+                  {loadingIns ? <><Loader2 size={11} className="mr-1 inline animate-spin" />分析看板数据…</> : <><Sparkles size={11} className="mr-1 inline" />生成 AI 洞察</>}
+                </button>
+              )
+            } />
+          {loadingIns && !ins ? (
+            <div className="flex items-center justify-center gap-2 py-10 text-[12.5px] text-ink3">
+              <Loader2 size={15} className="animate-spin text-blue-600" /> AI 正在分析 KPI 与风险数据…
+            </div>
+          ) : ins ? (
             <div className="grid grid-cols-1 gap-2.5 lg:grid-cols-2">
               {String(ins.insight).split("\n").filter(Boolean).slice(0, 6).map((line, i) => (
                 <div key={i} className="flex items-start gap-2.5 rounded-2xl bg-surface2/60 px-4 py-3 text-[13px] leading-relaxed text-ink/85">
@@ -232,9 +258,9 @@ export default function Dashboard({ health }) {
                 </div>
               ))}
             </div>
-          </Card>
-        </Reveal>
-      )}
+          ) : null}
+        </Card>
+      </Reveal>
     </div>
   );
 }

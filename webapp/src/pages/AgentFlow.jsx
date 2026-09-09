@@ -307,6 +307,9 @@ export default function AgentFlow({ health }) {
 
     try {
       const t = await api.createTicket(msg);
+      // 后端已返回：清空节点动画定时器，防止竞态把已完成状态改回
+      timers.current.forEach(clearTimeout);
+      timers.current = [];
       setOutput(t);
       setActiveIdx(-1);
       setAgents(AGENTS.map((a) => ({ ...a, status: "done" })));

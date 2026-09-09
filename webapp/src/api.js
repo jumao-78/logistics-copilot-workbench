@@ -1,9 +1,21 @@
 // API 层：复用后端全部现有接口（V2 只改 UI，不改业务）
+// 统一请求超时（默认 25s，覆盖 LLM 慢响应），避免按钮无限转圈
+const REQUEST_TIMEOUT = 25000;
 const call = async (path, opts = {}) => {
-  const resp = await fetch(path, {
-    headers: { "Content-Type": "application/json" },
-    ...opts,
-  });
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT);
+  let resp;
+  try {
+    resp = await fetch(path, {
+      headers: { "Content-Type": "application/json" },
+      signal: controller.signal,
+      ...opts,
+    });
+  } catch (e) {
+    clearTimeout(timer);
+    throw new Error(e.name === "AbortError" ? `请求超时（>${REQUEST_TIMEOUT / 1000}s）` : "网络连接失败");
+  }
+  clearTimeout(timer);
   if (!resp.ok) {
     let detail = resp.statusText;
     try {

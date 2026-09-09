@@ -240,9 +240,11 @@ function SectionTitle({ icon: Icon, children }) {
     </div>
   );
 }
-function DecisionCenter({ ticket, kbDocs, health }) {
+function DecisionCenter({ ticket, kbDocs, health, onReprocess }) {
   const rk = riskOf(ticket);
   const [lang, setLang] = useState("zh");
+  const [copied, setCopied] = useState(false);
+  const [regenerating, setRegenerating] = useState(false);
   const [ev, setEv] = useState(null);
   const llm = health?.ai_mode === "llm";
   const sources = useMemo(() => {
@@ -322,8 +324,22 @@ function DecisionCenter({ ticket, kbDocs, health }) {
           {lang === "zh" ? reply : `${reply}\n\n[English preview]`}
         </div>
         <div className="mt-2.5 flex items-center gap-2">
-          <button onClick={() => navigator.clipboard?.writeText(reply)} className="flex items-center gap-1 rounded-lg border border-line px-2.5 py-1.5 text-[11.5px] text-ink2 hover:bg-surface2"><Copy size={11} /> 复制</button>
-          <button className="btn-grad ml-auto flex items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-[12px] font-semibold"><Send size={11} /> 发送</button>
+          <button onClick={async () => {
+            if (!onReprocess || regenerating) return;
+            setRegenerating(true);
+            try { await onReprocess(); } finally { setRegenerating(false); }
+          }} disabled={regenerating}
+            className="flex items-center gap-1 rounded-lg border border-line px-2.5 py-1.5 text-[11.5px] text-ink2 hover:bg-surface2 disabled:opacity-60">
+            {regenerating ? <Loader2 size={11} className="animate-spin" /> : <RotateCcw size={11} />} 重新生成
+          </button>
+          <button onClick={() => { navigator.clipboard?.writeText(reply); setCopied(true); setTimeout(() => setCopied(false), 1600); }}
+            className="flex items-center gap-1 rounded-lg border border-line px-2.5 py-1.5 text-[11.5px] text-ink2 hover:bg-surface2">
+            {copied ? <CheckCircle2 size={11} className="text-emerald-500" /> : <Copy size={11} />} {copied ? "已复制" : "复制"}
+          </button>
+          <button onClick={() => { navigator.clipboard?.writeText(reply); setCopied(true); setTimeout(() => setCopied(false), 1600); }}
+            className="btn-grad ml-auto flex items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-[12px] font-semibold">
+            {copied ? <CheckCircle2 size={11} /> : <Send size={11} />} {copied ? "已复制" : "发送"}
+          </button>
         </div>
       </div>
 
@@ -413,6 +429,12 @@ export default function Inbox({ health }) {
   useEffect(() => { if (first.current) { first.current = false; reload(); } /* eslint-disable-next-line */ }, []);
   useEffect(() => { api.kbDocs().then(setKbDocs).catch(() => {}); }, []);
   useEffect(() => { if (sel == null) return setDetail(null); api.ticket(sel).then(setDetail).catch(() => {}); }, [sel, tickets]);
+  const reprocessTicket = async () => {
+    if (!detail) return;
+    await api.reprocess(detail.id);       // 重跑 AI 管道（后端真实接口）
+    await reload();                        // 刷新列表
+    api.ticket(detail.id).then(setDetail).catch(() => {});  // 刷新详情
+  };
 
   return (
     <div className="space-y-5">
@@ -459,7 +481,7 @@ export default function Inbox({ health }) {
             </>
           ) : <Card><Empty text="从左侧选择一张工单" /></Card>}
         </div>
-        <div className="col-span-4">{detail ? <DecisionCenter ticket={detail} kbDocs={kbDocs} health={health} /> : <Card><Empty text="选择工单后展示 AI 决策" /></Card>}</div>
+        <div className="col-span-4">{detail ? <DecisionCenter ticket={detail} kbDocs={kbDocs} health={health} onReprocess={reprocessTicket} /> : <Card><Empty text="选择工单后展示 AI 决策" /></Card>}</div>
       </div>
     </div>
   );

@@ -8,7 +8,8 @@ class TicketCreate(BaseModel):
     """粘贴原始消息 → AI 处理成工单。"""
     raw_text: str = Field(..., min_length=2, max_length=3000,
                           description="客服收到的原始求助内容（≤3000 字符，防超长输入耗尽 LLM token）")
-    channel: Optional[str] = Field(None, description="email / wechat / phone，缺省自动识别")
+    channel: Optional[str] = Field(None, pattern="^(email|wechat|phone)?$",
+                          description="email / wechat / phone，缺省自动识别")
     use_llm: Optional[bool] = Field(None, description="是否强制使用/禁用 LLM；缺省按配置自动")
 
 
