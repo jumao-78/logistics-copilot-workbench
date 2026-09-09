@@ -65,7 +65,7 @@ export default function HeroHeader({ health }) {
         <h1 className="display text-[33px] font-semibold leading-[1.08] tracking-[-0.02em] text-white">
           让全球物流工单
           <br />
-          用 AI 工作流自动闭环。
+          用 AI 工作流自动闭环
         </h1>
         <p className="mt-2 text-[13.5px] leading-relaxed text-blue-100/75">
           {health ? `${health.tickets} 张工单 · ${health.kb_docs} 篇知识库 · ${health.qa_logs} 次问答` : "正在连接工作区…"}
