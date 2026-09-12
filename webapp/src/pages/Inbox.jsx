@@ -262,7 +262,7 @@ function DecisionCenter({ ticket, kbDocs, health, onReprocess }) {
       <div className="flex items-center gap-2.5 border-b border-line/70 px-5 py-4">
         <div className="grad flex h-8 w-8 items-center justify-center rounded-xl shadow-[0_6px_16px_-6px_rgba(37,99,235,.55)]"><Bot size={15} className="text-white" /></div>
         <div className="min-w-0 flex-1">
-          <div className="text-[14px] font-semibold text-ink">AI Decision Center</div>
+          <div className="text-[14px] font-semibold text-ink">AI 决策中心</div>
           <div className="flex items-center gap-1 text-[10.5px] text-ink3"><Dot tone="success" pulse /> Online · {llm ? "glm-4-flash" : "规则模式"}</div>
         </div>
         <span className="num shrink-0 rounded-full bg-surface2 px-2.5 py-1 text-[11px] font-medium text-ink2">#{ticket.id}</span>

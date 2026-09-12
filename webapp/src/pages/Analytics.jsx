@@ -152,7 +152,7 @@ export default function Analytics({ health }) {
       {/* ═══ Header ═══ */}
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="display text-[30px] font-semibold tracking-[-0.02em] text-ink">数据分析 · AI Operations Intelligence</h1>
+          <h1 className="display text-[30px] font-semibold tracking-[-0.02em] text-ink">数据分析</h1>
           <p className="mt-1 text-[13.5px] text-ink2">长期视角：AI 为客服运营带来了什么价值 · 数据为模拟口径</p>
         </div>
         <div className="flex items-center gap-3">
@@ -161,7 +161,7 @@ export default function Analytics({ health }) {
           </span>
           <div className="hidden items-center gap-2 lg:flex">
             <span className="rounded-xl border border-line bg-surface px-3 py-1.5 text-[10.5px] text-ink3">
-              <span className="block font-medium text-ink2">5 Agents Running</span>RAG 已同步 · {health?.kb_docs ?? "—"} 篇
+              <span className="block font-medium text-ink2">5 个 Agent 运行中</span>RAG 已同步 · {health?.kb_docs ?? "—"} 篇
             </span>
           </div>
         </div>
@@ -188,7 +188,7 @@ export default function Analytics({ health }) {
       <div className="grid grid-cols-12 items-stretch gap-5">
         <div className="col-span-7 flex flex-col">
           <Card className="flex flex-1 flex-col">
-            <CardHead title="AI Efficiency" sub="AI 处理 vs 人工介入的当前口径（累计）" right={<Badge tone="primary">长期价值</Badge>} />
+            <CardHead title="AI 效率" sub="AI 处理 vs 人工介入的当前口径（累计）" right={<Badge tone="primary">长期价值</Badge>} />
             <div className="flex flex-1 flex-col justify-center gap-4 px-2 py-3">
               <div>
                 <div className="mb-1.5 flex items-end justify-between">
@@ -241,7 +241,7 @@ export default function Analytics({ health }) {
       <div>
         <div className="mb-3 flex items-center justify-between">
           <div>
-            <h2 className="display text-[17px] font-semibold text-ink">AI Agent 绩效</h2>
+            <h2 className="display text-[17px] font-semibold text-ink">Agent 绩效</h2>
             <p className="mt-0.5 text-[11.5px] text-ink3">指标为演示口径 · 真实评测：分类准确率 95%+（见评测报告）</p>
           </div>
           <span className="flex items-center gap-1.5 text-[11px] text-ink3"><Dot tone="success" pulse /> 编排监控同步</span>

@@ -59,7 +59,7 @@ export default function Settings({ health }) {
       {/* ═══ 标题 ═══ */}
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="display text-[30px] font-semibold tracking-[-0.02em] text-ink">Workspace Settings</h1>
+          <h1 className="display text-[30px] font-semibold tracking-[-0.02em] text-ink">工作区设置</h1>
           <p className="mt-1 text-[13.5px] text-ink2">管理工作区 AI 智能体、模型与连接 · 企业级配置</p>
         </div>
         <span className="flex items-center gap-1.5 rounded-full border border-line bg-surface px-3.5 py-1.5 text-[12px] text-ink2">
@@ -71,7 +71,7 @@ export default function Settings({ health }) {
       <div className="grid grid-cols-12 items-stretch gap-5">
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="col-span-7">
           <Card className="h-full p-6">
-            <SectionHead icon={Activity} tint="bg-blue-50 text-blue-600" title="System Overview" right={<Badge tone="success"><Dot tone="success" pulse /> Online</Badge>} />
+            <SectionHead icon={Activity} tint="bg-blue-50 text-blue-600" title="系统概览" right={<Badge tone="success"><Dot tone="success" pulse /> 运行中</Badge>} />
             <InfoRow k="AI Workspace 状态" v="运行中"
               badge={<span className="flex items-center gap-1 text-[10.5px] text-emerald-600"><CheckCircle2 size={11} /> 健康</span>} />
             <InfoRow k="AI 引擎" v={llm ? health.llm_model || "glm-4-flash" : "规则模式"} badge={<span className="text-[10.5px] text-ink3">{llm ? "LLM" : "无 Key 降级"}</span>} />
@@ -95,12 +95,12 @@ export default function Settings({ health }) {
 
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.06 }} className="col-span-5">
           <Card className="h-full p-6">
-            <SectionHead icon={Cpu} tint="bg-violet-50 text-violet-600" title="AI Models" right={<Badge tone="gray">模型配置</Badge>} />
-            <InfoRow k="主模型 · Primary" v={llm ? health.llm_model || "glm-4-flash" : "未连接"} badge={llm ? <StateBadge on /> : <span className="rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-medium text-amber-600">规则模式</span>} />
-            <InfoRow k="检索模型 · Retrieval" v="BM25 关键词索引" badge={<span className="text-[10.5px] text-ink3">当前方案</span>} />
-            <InfoRow k="Embedding · 向量" v="未启用" badge={<span className="rounded-full bg-surface2 px-2 py-0.5 text-[10px] text-ink3">升级路径</span>} />
-            <InfoRow k="推理模式 · Reasoning" v="Balanced" badge={<span className="text-[10.5px] text-ink3">temperature 0.1–0.3</span>} />
-            <InfoRow k="降级策略 · Fallback" v="Enabled" badge={<StateBadge on onLabel="自动降级规则模式" />} />
+            <SectionHead icon={Cpu} tint="bg-violet-50 text-violet-600" title="AI 模型" right={<Badge tone="gray">模型配置</Badge>} />
+            <InfoRow k="主模型" v={llm ? health.llm_model || "glm-4-flash" : "未连接"} badge={llm ? <StateBadge on /> : <span className="rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-medium text-amber-600">规则模式</span>} />
+            <InfoRow k="检索模型" v="BM25 关键词索引" badge={<span className="text-[10.5px] text-ink3">当前方案</span>} />
+            <InfoRow k="向量嵌入（升级项）" v="未启用" badge={<span className="rounded-full bg-surface2 px-2 py-0.5 text-[10px] text-ink3">升级路径</span>} />
+            <InfoRow k="推理模式" v="均衡（均衡/精准）" badge={<span className="text-[10.5px] text-ink3">temperature 0.1–0.3</span>} />
+            <InfoRow k="降级策略" v="已启用" badge={<StateBadge on onLabel="自动降级规则模式" />} />
             <div className="mt-4 rounded-xl bg-surface2/60 px-3 py-2.5 text-[10.5px] leading-relaxed text-ink3">
               单次 LLM 调用失败自动降级规则模式，管道不中断；向量检索为接入真实语料后的升级路径
             </div>
@@ -112,12 +112,12 @@ export default function Settings({ health }) {
       <div className="grid grid-cols-12 items-stretch gap-5">
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.1 }} className="col-span-5">
           <Card className="h-full p-6">
-            <SectionHead icon={Globe2} tint="bg-cyan-50 text-cyan-600" title="Connections" right={<Badge tone="gray">连接状态</Badge>} />
+            <SectionHead icon={Globe2} tint="bg-cyan-50 text-cyan-600" title="连接与通道" right={<Badge tone="gray">连接状态</Badge>} />
             <InfoRow k="LLM API（OpenAI 兼容）" v={llm ? "智谱开放平台" : "未配置 Key"}
               badge={llm ? <StateBadge on onLabel="已连接" /> : <span className="rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-medium text-amber-600">mock</span>} />
-            <InfoRow k="消息渠道 · Channel" v="email / wechat / phone" badge={<StateBadge on onLabel="已接入" />} />
-            <InfoRow k="数据存储 · Storage" v={health?.db_dialect || "sqlite"} badge={<StateBadge on onLabel="已连接" />} />
-            <InfoRow k="知识库存储 · KB" v="本地 Markdown + 表" badge={<StateBadge on onLabel="Active" />} />
+            <InfoRow k="消息渠道" v="邮件 / 微信 / 电话" badge={<StateBadge on onLabel="已接入" />} />
+            <InfoRow k="数据存储" v={health?.db_dialect || "sqlite"} badge={<StateBadge on onLabel="已连接" />} />
+            <InfoRow k="知识库存储" v="本地知识库（Markdown 同步）" badge={<StateBadge on onLabel="运行中" />} />
             <div className="mt-4 rounded-xl border border-dashed border-line px-3 py-2.5 text-[10.5px] leading-relaxed text-ink3">
               FedEx / CRM 等外部系统为后续集成项：当前演示以邮件/微信/电话消息渠道模拟接入
             </div>
@@ -126,22 +126,22 @@ export default function Settings({ health }) {
 
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.14 }} className="col-span-7">
           <Card className="h-full p-6">
-            <SectionHead icon={ShieldCheck} tint="bg-emerald-50 text-emerald-600" title="Security & Governance" right={<Badge tone="success">已启用 4 项</Badge>} />
+            <SectionHead icon={ShieldCheck} tint="bg-emerald-50 text-emerald-600" title="安全与治理" right={<Badge tone="success">已启用 4 项</Badge>} />
             <div className="space-y-0">
               <div className="flex items-center justify-between gap-3 border-b border-line/50 py-2.5">
-                <div><div className="text-[12.5px] font-medium text-ink">Prompt 注入防护</div><div className="text-[10px] text-ink3">消息中的指令性内容仅视为数据，不改变系统行为</div></div>
+                <div><div className="text-[12.5px] font-medium text-ink">提示词注入防护</div><div className="text-[10px] text-ink3">消息中的指令性内容仅视为数据，不改变系统行为</div></div>
                 <StateBadge on onLabel="已启用" />
               </div>
               <div className="flex items-center justify-between gap-3 border-b border-line/50 py-2.5">
-                <div><div className="text-[12.5px] font-medium text-ink">对话留痕 · Conversation Logging</div><div className="text-[10px] text-ink3">问答全量写入 qa_logs，支撑评测与审计</div></div>
+                <div><div className="text-[12.5px] font-medium text-ink">对话留痕</div><div className="text-[10px] text-ink3">问答全量写入 qa_logs，支撑评测与审计</div></div>
                 <StateBadge on onLabel="已启用" />
               </div>
               <div className="flex items-center justify-between gap-3 border-b border-line/50 py-2.5">
-                <div><div className="text-[12.5px] font-medium text-ink">审计追溯 · Audit Trail</div><div className="text-[10px] text-ink3">工单全量留痕 + 操作状态流转可查</div></div>
+                <div><div className="text-[12.5px] font-medium text-ink">审计追溯</div><div className="text-[10px] text-ink3">工单全量留痕 + 操作状态流转可查</div></div>
                 <StateBadge on onLabel="已启用" />
               </div>
               <div className="flex items-center justify-between gap-3 border-b border-line/50 py-2.5">
-                <div><div className="text-[12.5px] font-medium text-ink">数据隐私 · Data Privacy</div><div className="text-[10px] text-ink3">全程模拟数据 · 可完全本地离线部署</div></div>
+                <div><div className="text-[12.5px] font-medium text-ink">数据隐私</div><div className="text-[10px] text-ink3">全程模拟数据 · 可完全本地离线部署</div></div>
                 <StateBadge on onLabel="声明已注明" />
               </div>
               <div className="flex items-center justify-between gap-3 py-2.5">
@@ -159,7 +159,7 @@ export default function Settings({ health }) {
           <button onClick={() => setAdvOpen(!advOpen)} className="flex w-full items-center gap-3 px-6 py-4 text-left transition hover:bg-surface2/40">
             <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-slate-100 text-slate-600"><Wrench size={14} /></div>
             <span className="flex-1">
-              <span className="block text-[14px] font-semibold text-ink">Advanced Settings</span>
+              <span className="block text-[14px] font-semibold text-ink">高级设置</span>
               <span className="block text-[10.5px] text-ink3">API Token · CORS · 数据库 · 开发者配置</span>
             </span>
             <ChevronDown size={16} className={cls("text-ink3 transition-transform duration-300", advOpen && "rotate-180")} />

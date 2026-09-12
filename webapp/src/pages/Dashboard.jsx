@@ -166,7 +166,7 @@ export default function Dashboard({ health }) {
       <div className="grid grid-cols-12 items-stretch gap-5">
         <Reveal delay={0.08} className="col-span-7">
           <Card className="h-full">
-            <CardHead title="Today Operations Trend" sub="今日 09:00 起每小时工单动态 · 真实聚合"
+            <CardHead title="今日运营趋势" sub="今日 09:00 起每小时工单动态 · 真实聚合"
               right={
                 <div className="flex items-center gap-2.5 text-[10.5px]">
                   <span className="flex items-center gap-1 text-ink2"><span className="h-2 w-2 rounded-full bg-blue-600" /> 新增</span>
@@ -198,7 +198,7 @@ export default function Dashboard({ health }) {
 
         <Reveal delay={0.14} className="col-span-5">
           <Card className="h-full">
-            <CardHead title="Live High Priority Queue" sub="等待人工处理的工单" right={<Badge tone="danger"><Dot tone="danger" pulse /> {liveQueue.length} 条</Badge>} />
+            <CardHead title="实时高优队列" sub="等待人工处理的工单" right={<Badge tone="danger"><Dot tone="danger" pulse /> {liveQueue.length} 条</Badge>} />
             {liveQueue.length === 0 ? <Empty text="✅ 暂无待人工处理的工单" /> : (
               <div className="space-y-1">
                 {liveQueue.map((t) => (
@@ -220,7 +220,7 @@ export default function Dashboard({ health }) {
       <div className="grid grid-cols-12 items-stretch gap-5">
         <Reveal delay={0.08} className="col-span-4">
           <Card className="h-full">
-            <CardHead title="今日 Top 意图" sub={`基于今日 ${today.length} 条工单`} />
+            <CardHead title="今日热门意图" sub={`基于今日 ${today.length} 条工单`} />
             {todayIntents.length ? (
               <div className="h-[240px]">
                 <ResponsiveContainer width="100%" height="100%">
@@ -248,7 +248,7 @@ export default function Dashboard({ health }) {
 
         <Reveal delay={0.14} className="col-span-8">
           <Card className="h-full">
-            <CardHead title="AI Operations Feed" sub="AI 基于今日工单主动发现的问题与建议（规则引擎）" right={<Badge tone="success"><Dot tone="success" pulse /> 实时</Badge>} />
+            <CardHead title="AI 运营动态" sub="AI 基于今日工单主动发现的问题与建议（规则引擎）" right={<Badge tone="success"><Dot tone="success" pulse /> 实时</Badge>} />
             {feed.length === 0 ? (
               <Empty text="今日暂无足够工单信号，AI 将持续观察" />
             ) : (

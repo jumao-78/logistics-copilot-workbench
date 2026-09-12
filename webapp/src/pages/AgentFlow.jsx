@@ -27,7 +27,7 @@ function PageHeader({ running, agents, tickets, onRun }) {
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45 }}
       className="flex flex-wrap items-end justify-between gap-4">
       <div>
-        <h1 className="display text-[30px] font-semibold tracking-[-0.02em] text-ink">AI Agent Runtime</h1>
+        <h1 className="display text-[30px] font-semibold tracking-[-0.02em] text-ink">Agent 运行时</h1>
         <p className="mt-1 text-[13.5px] text-ink2">多 Agent 编排运行监控中心 · 物流客服场景</p>
       </div>
       <div className="flex items-center gap-3">
@@ -62,7 +62,7 @@ function WorkflowCanvas({ agents, request, activeIdx, onNodeClick }) {
       <div className="pointer-events-none absolute -left-16 -bottom-24 h-64 w-64 rounded-full" style={{ background: "radial-gradient(circle, rgba(6,182,212,.07), transparent 65%)" }} />
 
       <div className="mb-5 flex items-center justify-between">
-        <span className="flex items-center gap-1.5 text-[13px] font-semibold text-ink"><Layers size={14} className="text-blue-600" /> Agent Workflow Canvas</span>
+        <span className="flex items-center gap-1.5 text-[13px] font-semibold text-ink"><Layers size={14} className="text-blue-600" /> Agent 工作流视图</span>
         <span className="flex items-center gap-1.5 text-[10.5px] text-ink3">
           <span className="rounded-full bg-surface2 px-2 py-0.5">意图 → 跟踪 → 知识 → 推理 → 回复</span>
           <span className="rounded-full bg-surface2 px-2 py-0.5">延迟 / 工具为演示口径</span>
@@ -73,10 +73,10 @@ function WorkflowCanvas({ agents, request, activeIdx, onNodeClick }) {
       <div className="mx-auto mb-6 flex max-w-[640px] items-start gap-2.5 rounded-2xl border border-blue-100 bg-blue-50/40 px-4 py-3">
         <User size={14} className="mt-0.5 shrink-0 text-blue-500" />
         <div className="min-w-0 flex-1">
-          <div className="text-[10px] font-semibold uppercase tracking-wide text-blue-400">Customer Request</div>
+          <div className="text-[10px] font-semibold uppercase tracking-wide text-blue-400">客户请求</div>
           <div className="mt-0.5 line-clamp-2 text-[12.5px] leading-relaxed text-ink/85">{request || SAMPLE_MSG}</div>
         </div>
-        <span className="num shrink-0 text-[10px] text-ink3">in</span>
+        <span className="num shrink-0 text-[10px] text-ink3">输入</span>
       </div>
 
       {/* 节点行 */}
@@ -233,12 +233,12 @@ function Drawer({ agent, ticket, onClose }) {
           <button onClick={onClose} className="rounded-full p-1.5 text-ink3 hover:bg-surface2"><X size={15} /></button>
         </div>
         <div className="px-5 py-3">
-          {row("Purpose · 职责", A.purpose)}
-          {row("Model · 模型", ticket ? "glm-4-flash（OpenAI 兼容）" : "未运行：将使用 glm-4-flash / 规则降级")}
-          {row("Tools · 工具", A.tool)}
-          {row("Input · 输入", ticket ? ticket.raw_text : "等待运行模拟…")}
-          {row("Output · 输出", ticket ? (ticket.suggested_reply || "建议回复已生成，可在工单台查看") : "—")}
-          {row("Latency · 延迟（演示）", `${A.lat}ms`)}
+          {row("职责", A.purpose)}
+          {row("模型", ticket ? "glm-4-flash（OpenAI 兼容）" : "未运行：将使用 glm-4-flash / 规则降级")}
+          {row("工具", A.tool)}
+          {row("输入", ticket ? ticket.raw_text : "等待运行模拟…")}
+          {row("输出", ticket ? (ticket.suggested_reply || "建议回复已生成，可在工单台查看") : "—")}
+          {row("延迟（演示）", `${A.lat}ms`)}
           {row("Token 用量（演示）", `${Math.round(A.lat * 2.4)}`)}
           <div className="mt-2 flex items-center gap-1.5 text-[10px] text-ink3"><Zap size={10} /> 数值为本地演示口径；真实调用由 LLM 网关计量</div>
         </div>
