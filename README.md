@@ -205,6 +205,7 @@ DATABASE_URL=mysql+pymysql://user:password@localhost:3306/logistics_copilot?char
 | 文档 | 内容 |
 |---|---|
 | [docs/业务调研一页纸.md](docs/业务调研一页纸.md) | 货代客服的一天、三大痛点、痛点→系统/AI/自动化需求映射、价值预估 |
+| [docs/PRD-跨境物流智能客服工作台.md](docs/PRD-跨境物流智能客服工作台.md) | 产品需求文档：背景/目标/成功指标/用户场景/功能需求/非功能/风险/计划 |
 | [docs/schema.sql](docs/schema.sql) | 数据模型 DDL（与规划文档 §4 一致） |
 | [docs/eval_set.json](docs/eval_set.json) | 20 条独立评测集（人工标注） |
 | [docs/evaluation_report.md](docs/evaluation_report.md) | 评测报告（由 scripts/evaluate.py 生成） |
