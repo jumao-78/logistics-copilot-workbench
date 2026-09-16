@@ -1,27 +1,64 @@
 @echo off
 rem ============================================================
-rem  Logistics Copilot ä¸€é”®å¯åŠ¨ï¼ˆè·¨å¢ƒç‰©æµæ™ºèƒ½å®¢æœå·¥ä½œå°ï¼‰
-rem  åŒå‡»è¿è¡Œï¼šå…ˆå¯åŠ¨åŽç«¯æœåŠ¡ï¼Œå°±ç»ªåŽè‡ªåŠ¨æ‰“å¼€æµè§ˆå™¨
-rem  å…³é—­æ–¹æ³•ï¼šå…³æŽ‰åä¸º "Logistics Copilot Server" çš„é‚£ä¸ªçª—å£
+rem  Logistics Copilot Ò»¼üÆô¶¯£¨¿ç¾³ÎïÁ÷ÖÇÄÜ¿Í·þ¹¤×÷Ì¨£©
+rem  Ë«»÷±¾ÎÄ¼þ¼´¿É£º×Ô¶¯¼ì²é»·¾³ -> Æô¶¯·þÎñ -> ¾ÍÐ÷ºó´ò¿ªä¯ÀÀÆ÷
+rem  ¹Ø±ÕÑÝÊ¾£º¹Øµô±êÌâÎª "Logistics Copilot Server" µÄ´°¿Ú
 rem ============================================================
-chcp 65001 >nul
 cd /d "%~dp0"
 
-echo [1/3] å¯åŠ¨åŽç«¯æœåŠ¡ä¸­ï¼ˆä¼šå¼¹å‡ºæ–°çª—å£ï¼Œè¯·å‹¿å…³é—­å®ƒï¼‰...
-start "Logistics Copilot Server (do not close)" cmd /k "python -m uvicorn app.main:app --host 127.0.0.1 --port 8010"
+echo.
+echo ============ Logistics Copilot Ò»¼üÆô¶¯ ============
+echo.
 
-echo [2/3] ç­‰å¾…æœåŠ¡å°±ç»ªï¼ˆçº¦ 4 ç§’ï¼‰...
-timeout /t 4 /nobreak >nul
+echo [1/4] ¼ì²é Python »·¾³ ...
+where python >nul 2>nul
+if errorlevel 1 (
+  echo   [´íÎó] Î´ÕÒµ½ python ÃüÁî¡£
+  echo   Çë°²×° Python 3.10+ ²¢ÔÚ°²×°Ê±¹´Ñ¡ Add python.exe to PATH¡£
+  echo.
+  pause
+  exit /b 1
+)
+python --version
+echo   Python »·¾³Õý³£¡£
+echo.
 
-echo [3/3] æ‰“å¼€æµè§ˆå™¨...
+echo [2/4] ¼ì²é 8010 ¶Ë¿ÚÊÇ·ñÒÑÓÐ·þÎñ ...
+netstat -ano | findstr ":8010" | findstr "LISTENING" >nul 2>nul
+if not errorlevel 1 (
+  echo   [ÌáÊ¾] ¼ì²âµ½·þÎñÒÑÔÚÔËÐÐ£¬Ö±½ÓÎªÄã´ò¿ªä¯ÀÀÆ÷¡£
+  start "" http://127.0.0.1:8010
+  timeout /t 3 /nobreak >nul
+  exit /b 0
+)
+
+echo [3/4] Æô¶¯·þÎñ£¨½«µ¯³ö·þÎñ´°¿Ú£¬ÇëÎð¹Ø±ÕËü£©...
+start "Logistics Copilot Server (do not close)" "%~dp0server.bat"
+echo.
+
+echo [4/4] µÈ´ý·þÎñ¾ÍÐ÷ ...
+set /a WAIT_N=0
+:wait_loop
+timeout /t 2 /nobreak >nul
+netstat -ano | findstr ":8010" | findstr "LISTENING" >nul 2>nul
+if not errorlevel 1 goto ready
+set /a WAIT_N+=1
+if %WAIT_N% lss 15 goto wait_loop
+echo.
+echo   [´íÎó] ·þÎñÔÚ 30 ÃëÄÚÃ»ÓÐÆô¶¯³É¹¦¡£
+echo   Çë²é¿´µ¯³öµÄ "Logistics Copilot Server" ´°¿ÚÀïµÄ±¨´íÐÅÏ¢£¬
+echo   °Ñ¸Ã´°¿Ú½ØÍ¼·¢¸ø¿ª·¢Õß¼´¿É¿ìËÙ¶¨Î»¡£
+echo.
+pause
+exit /b 1
+
+:ready
 start "" http://127.0.0.1:8010
-
 echo.
-echo ================================================
-echo  å·²å¯åŠ¨ï¼Œæµè§ˆå™¨åœ°å€ï¼š http://127.0.0.1:8010
+echo ============================================================
+echo   Æô¶¯³É¹¦£¡ä¯ÀÀÆ÷ÒÑ´ò¿ª£º http://127.0.0.1:8010
 echo.
-echo  Â· æ¼”ç¤ºç»“æŸåŽï¼šå…³æŽ‰ "Logistics Copilot Server" çª—å£å³å¯
-echo  Â· è‹¥é¡µé¢æ˜¾ç¤º"ä»Šæ—¥å·¥å•ä¸º 0"ï¼šè¿è¡Œ python scripts/mock_data.py --force åˆ·æ–°æ•°æ®
-echo  Â· è‹¥æç¤ºç«¯å£è¢«å ç”¨ï¼šå…ˆå…³æŽ‰æ—§çš„ Server çª—å£å†åŒå‡»æœ¬è„šæœ¬
-echo ================================================
-timeout /t 5 >nul
+echo   ¡¤ ÑÝÊ¾½áÊøºó£º¹Øµô "Logistics Copilot Server" ´°¿Ú¼´¿É
+echo   ¡¤ Èô"½ñÈÕ¹¤µ¥"Îª 0£ºÔËÐÐ  python scripts/mock_data.py --force
+echo ============================================================
+timeout /t 6 /nobreak >nul
