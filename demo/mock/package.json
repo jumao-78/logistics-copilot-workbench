@@ -1,0 +1,9 @@
+{
+  "name": "logistics-copilot-demo-mock",
+  "private": true,
+  "type": "module",
+  "description": "静态演示用的浏览器内存接口层（node 下可直接跑 api-core.test.js）",
+  "scripts": {
+    "test": "node --test api-core.test.js"
+  }
+}
